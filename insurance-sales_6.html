@@ -1703,23 +1703,41 @@ document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
 seed(); fillSellerFilters(); renderCustomers(); renderSales(); renderRegistry();
 
 // ===== API CONFIG =====
-// เมื่อรันจาก Apps Script Web App: ใช้ URL ตัวเอง (ไม่มี CORS)
-// เมื่อรันจาก file:// หรือ localhost: ใช้ URL ด้านล่าง
-const _SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMRF4Scstfhh1JcATCFnliLjyezUI1h9ZnhytdT7hwynCuUhdqniUS6r5owrcUsktR/exec';
-const API_URL = (location.protocol === 'https:' && location.hostname.includes('google'))
-  ? location.href.split('?')[0]   // ใช้ URL เดิมของหน้านี้
-  : _SCRIPT_URL;                   // ใช้ URL ตรง (สำหรับ localhost/file)
+const API_URL = 'https://script.google.com/macros/s/AKfycbxMRF4Scstfhh1JcATCFnliLjyezUI1h9ZnhytdT7hwynCuUhdqniUS6r5owrcUsktR/exec';
 
 // cache ข้อมูลจาก API ไว้ใน memory
-let _salesCache = null;      // array ของรายการขายทั้งหมดจาก Sheet
-let _salesCacheTime = 0;     // เวลาที่ cache ล่าสุด
-const CACHE_TTL = 5 * 60 * 1000; // cache 5 นาที
+let _salesCache = null;
+let _salesCacheTime = 0;
+const CACHE_TTL = 5 * 60 * 1000;
 
-async function apiCall(params) {
-  if(!API_URL || API_URL==='YOUR_APPS_SCRIPT_URL') return null;
-  const qs = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_URL}?${qs}`);
-  return res.json();
+// เรียก API ด้วย JSONP — ไม่มีปัญหา CORS ทุก domain
+function apiCall(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_cb' + Date.now() + Math.floor(Math.random()*9999);
+    let script;
+    const timer = setTimeout(() => {
+      delete window[cbName];
+      if(script && script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error('timeout'));
+    }, 25000);
+
+    window[cbName] = function(data) {
+      clearTimeout(timer);
+      delete window[cbName];
+      if(script && script.parentNode) script.parentNode.removeChild(script);
+      resolve(data);
+    };
+
+    const qs = new URLSearchParams({...params, callback: cbName}).toString();
+    script = document.createElement('script');
+    script.src = `${API_URL}?${qs}`;
+    script.onerror = () => {
+      clearTimeout(timer);
+      delete window[cbName];
+      reject(new Error('JSONP error'));
+    };
+    document.head.appendChild(script);
+  });
 }
 
 // โหลด sales ทั้งหมดมา cache ไว้ — ค้นหาใน memory แทน
