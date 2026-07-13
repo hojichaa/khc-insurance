@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบขายประกัน — ลูกค้าและการขาย</title>
+<style>
+  :root {
+    --ink:#1a2332; --ink-soft:#5a6678; --paper:#f7f5f0; --card:#fff; --line:#e4e0d6;
+    --accent:#b8472e; --accent-soft:#fbeee9; --gold:#c08a2d;
+    --green:#2f7d52; --green-soft:#e8f3ec; --amber:#b8860b; --amber-soft:#fbf3dd;
+    --red:#c0392b; --red-soft:#fbe9e7; --blue:#2c5d8f; --blue-soft:#e8f0f7;
+    --radius:10px; --shadow:0 1px 3px rgba(26,35,50,.06),0 4px 16px rgba(26,35,50,.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"Sukhumvit Set","Noto Sans Thai",-apple-system,"Segoe UI",sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px;}
+  header{background:var(--ink);color:#fff;padding:18px 0;position:sticky;top:0;z-index:50;}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .brand{display:flex;align-items:baseline;gap:12px;}
+  .brand h1{font-size:1.15rem;font-weight:700;letter-spacing:.2px;}
+  .brand span{font-size:.78rem;color:#9aa6b8;}
+  .tabs{display:flex;gap:4px;}
+  .tab{background:transparent;border:none;color:#aeb8c7;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.92rem;font-weight:600;font-family:inherit;transition:.15s;}
+  .tab:hover{color:#fff;background:rgba(255,255,255,.08);}
+  .tab.active{color:var(--ink);background:var(--paper);}
+  main{padding:26px 0 60px;}
+  .view{display:none;}
+  .view.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+  .section-head h2{font-size:1.1rem;font-weight:700;}
+  .section-head .desc{font-size:.85rem;color:var(--ink-soft);}
+  .btn{background:var(--accent);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:700;font-size:.9rem;cursor:pointer;font-family:inherit;transition:.15s;}
+  .btn:hover{background:#9d3a24;}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);}
+  .btn.ghost:hover{background:var(--paper);}
+  .btn.sm{padding:6px 12px;font-size:.82rem;}
+  .toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .search{flex:1;min-width:220px;padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:.92rem;font-family:inherit;background:#fff;}
+  .search:focus{outline:2px solid var(--accent-soft);border-color:var(--accent);}
+  select.filter{padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:.9rem;font-family:inherit;background:#fff;cursor:pointer;}
+  .card-table{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  table{width:100%;border-collapse:collapse;}
+  th{background:var(--paper);text-align:left;padding:12px 14px;font-size:.78rem;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  td{padding:13px 14px;border-bottom:1px solid var(--line);font-size:.9rem;vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tbody tr{transition:background .12s;}
+  tbody tr:hover{background:#fcfbf8;}
+  .cust-name{font-weight:700;}
+  .cust-sub{font-size:.8rem;color:var(--ink-soft);}
+  .money{font-variant-numeric:tabular-nums;font-weight:600;}
+  .code-chip{display:inline-block;background:var(--ink);color:#fff;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:5px;letter-spacing:.3px;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.76rem;font-weight:700;white-space:nowrap;}
+  .b-general{background:var(--green-soft);color:var(--green);}
+  .b-agent{background:var(--blue-soft);color:var(--blue);}
+  .b-vip{background:var(--accent-soft);color:var(--accent);}
+  .b-count{background:var(--green-soft);color:var(--green);}
+  .b-nocount{background:var(--paper);color:var(--ink-soft);border:1px solid var(--line);}
+  .row-actions{display:flex;gap:6px;}
+  .icon-btn{background:none;border:1px solid var(--line);border-radius:6px;padding:5px 9px;cursor:pointer;font-size:.8rem;font-family:inherit;color:var(--ink-soft);}
+  .icon-btn:hover{background:var(--paper);color:var(--ink);}
+  .empty{text-align:center;padding:50px 20px;color:var(--ink-soft);}
+  .empty .big{font-size:1.05rem;font-weight:700;color:var(--ink);margin-bottom:6px;}
+  .overlay{position:fixed;inset:0;background:rgba(26,35,50,.45);display:none;align-items:flex-start;justify-content:center;padding:30px 16px;z-index:100;overflow-y:auto;}
+  .overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:14px;width:100%;max-width:700px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:pop .2s ease;}
+  @keyframes pop{from{transform:scale(.97);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .modal-head{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+  .modal-head h3{font-size:1.1rem;font-weight:700;}
+  .x{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--ink-soft);line-height:1;}
+  .modal-body{padding:22px 24px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:.85rem;font-weight:700;margin-bottom:6px;}
+  .field label .req{color:var(--accent);}
+  .field input,.field select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:.92rem;font-family:inherit;background:#fff;}
+  .field input:focus,.field select:focus{outline:2px solid var(--accent-soft);border-color:var(--accent);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .modal-foot{padding:16px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;}
+  .calc-box{background:var(--accent-soft);border:1px solid #f0d5cc;border-radius:10px;padding:16px;margin-top:4px;}
+  .calc-box h4{font-size:.9rem;color:var(--accent);margin-bottom:12px;}
+  .calc-row{display:flex;justify-content:space-between;font-size:.88rem;padding:5px 0;}
+  .calc-row .lbl{color:var(--ink-soft);}
+  .calc-row .val{font-weight:700;font-variant-numeric:tabular-nums;}
+  .calc-row.total{border-top:1px dashed #f0d5cc;margin-top:6px;padding-top:10px;font-size:1rem;}
+  .calc-row.total .val{color:var(--accent);}
+  .warn-flag{background:var(--red-soft);border:1px solid #f0c0b8;color:var(--red);border-radius:8px;padding:10px 14px;font-size:.85rem;margin-top:12px;display:none;}
+  .warn-flag.show{display:block;}
+  .ok-flag{background:var(--green-soft);border:1px solid #bfe0cc;color:var(--green);border-radius:8px;padding:8px 12px;font-size:.82rem;margin-top:12px;display:none;}
+  .ok-flag.show{display:block;}
+  .sub-note{font-size:.78rem;color:var(--ink-soft);margin-top:4px;}
+  .secret-tag{font-size:.7rem;background:var(--ink);color:#fff;padding:2px 8px;border-radius:4px;font-weight:700;letter-spacing:.3px;}
+  .exc-wrap{margin-top:10px;}
+  .exc-row{display:grid;grid-template-columns:1.2fr 1.2fr .8fr auto;gap:8px;margin-bottom:8px;align-items:center;}
+  .exc-row select,.exc-row input{padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-size:.85rem;font-family:inherit;background:#fff;}
+  .exc-del{background:var(--red-soft);color:var(--red);border:none;border-radius:6px;padding:7px 10px;cursor:pointer;font-size:.8rem;}
+  .add-exc{background:#fff;border:1px dashed var(--blue);color:var(--blue);border-radius:7px;padding:7px 12px;cursor:pointer;font-size:.82rem;font-weight:600;font-family:inherit;}
+  .exc-head{display:grid;grid-template-columns:1.2fr 1.2fr .8fr auto;gap:8px;font-size:.74rem;color:var(--ink-soft);font-weight:700;margin-bottom:4px;padding:0 2px;}
+  @media (max-width:760px){
+    .tabs{display:none;}
+    .grid2,.grid3{grid-template-columns:1fr;}
+    th.hide-m,td.hide-m{display:none;}
+    .mobile-tabs{display:flex !important;}
+    .exc-row,.exc-head{grid-template-columns:1fr 1fr;}
+  }
+  .mobile-tabs{display:none;gap:6px;margin-bottom:18px;}
+  .mobile-tabs .tab{background:#fff;border:1px solid var(--line);color:var(--ink-soft);flex:1;}
+  .mobile-tabs .tab.active{background:var(--ink);color:#fff;}
+  /* ===== หน้ารับชำระ ===== */
+  .pay-search-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:var(--shadow);}
+  .pay-search-box h3{font-size:.95rem;font-weight:700;margin-bottom:12px;color:var(--blue);}
+  .pay-search-row{display:flex;gap:10px;align-items:center;}
+  .pay-search-row input{flex:1;padding:10px 14px;border:1.5px solid var(--line);border-radius:8px;font-size:.92rem;font-family:inherit;}
+  .pay-search-row input:focus{outline:none;border-color:var(--blue);}
+  .pay-results{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+  .pay-result-item{padding:12px 16px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;background:#fff;transition:.15s;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;}
+  .pay-result-item:hover{border-color:var(--blue);background:var(--blue-soft);}
+  .pay-result-item.selected{border-color:var(--green);background:var(--green-soft);}
+  .pay-result-main{font-weight:700;font-size:.92rem;}
+  .pay-result-sub{font-size:.8rem;color:var(--ink-soft);margin-top:2px;}
+  .pay-confirm-box{background:#fff;border:1.5px solid var(--green);border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:var(--shadow);}
+  .pay-confirm-box h3{font-size:.95rem;font-weight:700;margin-bottom:14px;color:var(--green);}
+  .pay-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+  .pay-info-item{background:var(--paper);border-radius:8px;padding:10px 14px;}
+  .pay-info-item .lbl{font-size:.75rem;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+  .pay-info-item .val{font-size:.95rem;font-weight:700;margin-top:2px;}
+  .pay-info-item .val.big{font-size:1.1rem;color:var(--green);}
+  .pay-info-item .val.warn{color:var(--accent);}
+  .pay-installment-list h4{font-size:.82rem;font-weight:700;color:var(--ink-soft);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px;}
+  .pay-inst-row{display:grid;grid-template-columns:36px 1fr 100px 80px;gap:8px;padding:8px 12px;border-radius:8px;font-size:.85rem;align-items:center;}
+  .pay-inst-row.hdr{background:var(--paper);font-weight:700;font-size:.78rem;color:var(--ink-soft);}
+  .pay-inst-row.paid{background:#f0faf4;color:var(--green);}
+  .pay-inst-row.pending{background:#fffbf0;}
+  .pay-inst-row.current{background:var(--blue-soft);border:1px solid #c0d8ee;font-weight:700;}
+  .pay-form-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:20px;}
+  .pay-form-box h3{font-size:.95rem;font-weight:700;margin-bottom:14px;color:var(--ink);}
+  .pay-amount-ref{font-size:.85rem;color:var(--ink-soft);text-align:center;margin-bottom:12px;}
+  .pay-hist-wrap{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;}
+  .pay-hist-wrap h3{font-size:.92rem;font-weight:700;margin-bottom:12px;}
+  .pay-hist-row{display:grid;grid-template-columns:36px 90px 1fr 90px 80px auto;gap:8px;padding:10px 14px;border-radius:8px;font-size:.84rem;align-items:center;border:1px solid var(--line);margin-bottom:6px;background:#fff;}
+  .pay-hist-row.hdr{background:var(--paper);font-weight:700;font-size:.78rem;color:var(--ink-soft);border:none;margin-bottom:2px;}
+  /* ===== หน้าลูกหนี้ ===== */
+  .debt-summary{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .debt-chip{padding:6px 14px;border-radius:20px;font-size:.82rem;font-weight:600;border:1px solid var(--line);}
+  .debt-chip.red{background:#fff0f0;border-color:#f5c6c6;color:var(--red);}
+  .debt-chip.yellow{background:#fffbe6;border-color:#ecd9a3;color:#856404;}
+  .debt-chip.green{background:var(--green-soft);border-color:#bfe0cc;color:var(--green);}
+  .debt-chip.gray{background:var(--paper);color:var(--ink-soft);}
+  @media(max-width:700px){.pay-info-grid{grid-template-columns:1fr 1fr;}.pay-hist-row{grid-template-columns:30px 80px 1fr 70px auto;}}
+  /* registry */
+  .reg-block{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);}
+  .reg-block h4{font-size:.92rem;font-weight:700;margin-bottom:4px;color:var(--blue);}
+  .ins-check{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .ins-check label{display:flex;align-items:center;gap:6px;font-size:.85rem;font-weight:500;padding:6px 8px;border:1px solid var(--line);border-radius:7px;cursor:pointer;}
+  .ins-check label:hover{background:var(--paper);}
+  .ins-check input{width:auto;}
+  .ins-check .tier{font-size:.7rem;color:var(--ink-soft);}
+  .type-disc{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .type-disc .td-item{display:flex;align-items:center;gap:6px;}
+  .type-disc .td-item span{font-size:.85rem;font-weight:700;min-width:46px;}
+  .type-disc .td-item input{padding:7px 8px;border:1px solid var(--line);border-radius:7px;font-size:.85rem;font-family:inherit;width:100%;}
+  .rexc-head{display:grid;grid-template-columns:1.1fr 1fr 1.6fr .7fr auto;gap:8px;font-size:.74rem;color:var(--ink-soft);font-weight:700;margin-bottom:4px;padding:0 2px;}
+  .rexc-row{display:grid;grid-template-columns:1.1fr 1fr 1.6fr .7fr auto;gap:8px;margin-bottom:8px;align-items:center;}
+  .rexc-row select,.rexc-row input{padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-size:.85rem;font-family:inherit;background:#fff;width:100%;}
+  @media (max-width:760px){
+    .ins-check{grid-template-columns:1fr 1fr;}
+    .type-disc{grid-template-columns:1fr 1fr;}
+    .rexc-head{display:none;}
+    .rexc-row{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand"><h1>ระบบขายประกัน</h1><span>ลูกค้า · การขาย · KHC Group</span></div>
+    <nav class="tabs">
+      <button class="tab active" data-view="sales">รายการขาย</button>
+      <button class="tab" data-view="payments">รับชำระเงิน</button>
+      <button class="tab" data-view="debtors">ลูกหนี้</button>
+      <button class="tab" data-view="customers">ลูกค้า</button>
+      <button class="tab" data-view="registry" data-locked="1">ตัวแทน/VIP 🔒</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="mobile-tabs">
+    <button class="tab active" data-view="sales">รายการขาย</button>
+    <button class="tab" data-view="payments">รับชำระ</button>
+    <button class="tab" data-view="debtors">ลูกหนี้</button>
+    <button class="tab" data-view="customers">ลูกค้า</button>
+    <button class="tab" data-view="registry" data-locked="1">ทะเบียน 🔒</button>
+  </div>
+
+  <section class="view active" id="sales">
+    <div class="section-head">
+      <div><h2>รายการขายประกัน</h2>
+      <div class="desc">ระบบดึงส่วนลดตามตัวแทน×ประเภท×บริษัทให้อัตโนมัติ พร้อมเตือนถ้าลดเกินเพดาน</div></div>
+      <button class="btn" onclick="openSaleModal()">+ บันทึกการขายใหม่</button>
+    </div>
+    <div class="toolbar">
+      <input class="search" id="saleSearch" placeholder="ค้นหา ลูกค้า / กรมธรรม์ / ทะเบียน / ผู้ขาย" oninput="renderSales()">
+      <select class="filter" id="saleFilterType" onchange="renderSales()">
+        <option value="">ทุกประเภทประกัน</option>
+        <option value="ป.1">ป.1</option><option value="ป.2+">ป.2+</option><option value="ป.3+">ป.3+</option>
+        <option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
+        <option value="พ.ร.บ.">พ.ร.บ.</option><option value="อัคคีภัย">อัคคีภัย</option><option value="Non-Motor">Non-Motor</option>
+      </select>
+      <select class="filter" id="saleFilterCount" onchange="renderSales()">
+        <option value="">นับยอด/ไม่นับ</option><option value="yes">นับยอด</option><option value="no">ไม่นับยอด</option>
+      </select>
+    </div>
+    <div class="card-table">
+      <table>
+        <thead><tr>
+          <th>ลูกค้า / ผู้เอาประกัน</th><th class="hide-m">ประเภท</th><th class="hide-m">บริษัท</th>
+          <th>เบี้ยสุทธิ</th><th>ส่วนลด</th><th>นับยอด</th><th class="hide-m">ผู้ขาย</th><th></th>
+        </tr></thead>
+        <tbody id="salesBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="view" id="customers">
+    <div class="section-head">
+      <div><h2>ลูกค้า (เจ้าของรถ)</h2>
+      <div class="desc">เจ้าของรถ/ผู้เอาประกัน — ส่งเอง (ทั่วไป) หรือผ่านตัวแทน/VIP</div></div>
+      <button class="btn" onclick="openCustModal()">+ เพิ่มเจ้าของรถ</button>
+    </div>
+    <div class="toolbar">
+      <input class="search" id="custSearch" placeholder="ค้นหา ชื่อ / รหัส / เบอร์ / สังกัด" oninput="renderCustomers()">
+      <select class="filter" id="custFilterType" onchange="renderCustomers()">
+        <option value="">ทุกช่องทาง</option><option value="general">ลูกค้าทั่วไป</option>
+        <option value="agent">ผ่านตัวแทน</option><option value="vip">ผ่าน VIP</option>
+      </select>
+      <select class="filter" id="custFilterSeller" onchange="renderCustomers()">
+        <option value="">ทุกเซลล์</option>
+      </select>
+    </div>
+    <div class="card-table">
+      <table>
+        <thead><tr>
+          <th>รหัส / ชื่อ</th><th>ช่องทาง</th><th class="hide-m">สังกัด</th>
+          <th class="hide-m">เซลล์</th><th class="hide-m">เบอร์</th><th></th>
+        </tr></thead>
+        <tbody id="custBody"></tbody>
+      </table>
+    </div>
+  </section>
+  <!-- PAYMENTS (รับชำระเงิน) -->
+  <section class="view" id="payments">
+    <div class="section-head">
+      <div><h2>รับชำระเงิน</h2>
+      <div class="desc">ค้นหารายการขายก่อน → ยืนยันข้อมูล → บันทึกรับชำระ — กันคีย์ผิดคัน</div></div>
+    </div>
+
+    <!-- ขั้น 1: ค้นหา -->
+    <div class="pay-search-box">
+      <h3>ขั้นที่ 1 — ค้นหารายการขาย</h3>
+      <div class="pay-search-row">
+        <input id="paySearch" placeholder="พิมพ์ ชื่อลูกค้า / ทะเบียนรถ / เลขธุรกรรม / กรมธรรม์" oninput="searchPaySales()">
+      </div>
+      <div class="pay-results" id="payResults"></div>
+    </div>
+
+    <!-- ขั้น 2: ยืนยันข้อมูล (ซ่อนก่อน) -->
+    <div class="pay-confirm-box" id="payConfirmBox" style="display:none">
+      <h3>✓ ขั้นที่ 2 — ยืนยันรายการก่อนบันทึก</h3>
+      <div class="pay-info-grid" id="payInfoGrid"></div>
+      <div id="payInstallmentSection"></div>
+    </div>
+
+    <!-- ขั้น 3: กรอกยอด (ซ่อนก่อน) -->
+    <div class="pay-form-box" id="payFormBox" style="display:none">
+      <h3>ขั้นที่ 3 — บันทึกรับชำระ</h3>
+      <div class="grid3">
+        <div class="field">
+          <label>วันที่รับชำระ <span class="req">*</span></label>
+          <input type="date" id="p_date">
+        </div>
+        <div class="field">
+          <label>ยอดที่รับจริง (บาท) <span class="req">*</span></label>
+          <input type="number" id="p_amount" placeholder="0.00" oninput="recalcPay()">
+        </div>
+        <div class="field">
+          <label>วิธีชำระ</label>
+          <select id="p_method">
+            <option value="โอน">โอนเงิน</option>
+            <option value="เงินสด">เงินสด</option>
+            <option value="บัตรเครดิต">บัตรเครดิต</option>
+            <option value="เช็ค">เช็ค</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>งวดที่ <span class="cust-sub">(กรณีผ่อน)</span></label>
+          <input type="number" id="p_installNo" placeholder="เช่น 1, 2, 3 ...">
+        </div>
+        <div class="field">
+          <label>เลขที่ใบเสร็จ</label>
+          <input id="p_receiptNo" placeholder="เช่น KHC2410001">
+        </div>
+      </div>
+      <div class="field">
+        <label>หมายเหตุ</label>
+        <input id="p_remark" placeholder="เช่น จ่ายพร้อมงวดหน้า, บัตรโลตัส 200.-">
+      </div>
+      <div id="payCalcBox" style="display:none;margin-top:14px">
+        <div id="payAmountDisplay" class="calc-box"></div>
+      </div>
+      <div class="modal-foot" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)">
+        <button class="btn ghost" onclick="resetPayForm()">ล้างข้อมูล</button>
+        <button class="btn" onclick="savePaymentToAPI()">บันทึกรับชำระ</button>
+      </div>
+    </div>
+
+    <!-- ประวัติรับชำระ -->
+    <div class="pay-hist-wrap" id="payHistWrap" style="display:none">
+      <h3>ประวัติรับชำระ — รายการนี้</h3>
+      <div class="pay-hist-row hdr">
+        <span>งวด</span><span>วันที่</span><span>วิธี</span><span>ยอด (฿)</span><span>ใบเสร็จ</span><span></span>
+      </div>
+      <div id="payHistBody"></div>
+      <div id="payBalanceRow" style="margin-top:10px;padding:10px 14px;border-radius:8px;font-weight:700;font-size:.92rem;"></div>
+    </div>
+  </section>
+
+  <!-- DEBTORS (ลูกหนี้) -->
+  <section class="view" id="debtors">
+    <div class="section-head">
+      <div><h2>ลูกหนี้ค้างชำระ</h2>
+      <div class="desc">ผ่อนและวางบิลที่ยังค้าง — 🔴 เกินกำหนด · 🟡 ใกล้ครบ 7 วัน · ⚪ รอเก็บ</div></div>
+      <button class="btn" onclick="renderDebtors()">🔄 รีเฟรช</button>
+    </div>
+    <div class="toolbar">
+      <select class="filter" id="debtFilter" onchange="renderDebtors()">
+        <option value="all">ทั้งหมด</option>
+        <option value="overdue">🔴 เกินกำหนดเท่านั้น</option>
+        <option value="near">🟡 ใกล้ครบ 7 วัน</option>
+        <option value="bill">วางบิลเท่านั้น</option>
+        <option value="install">ผ่อนเท่านั้น</option>
+      </select>
+    </div>
+    <div class="debt-summary" id="debtSummary"></div>
+    <div class="card-table">
+      <table>
+        <thead><tr>
+          <th>สถานะ</th><th>ลูกค้า / ทะเบียน</th><th>ประเภท</th>
+          <th class="hide-m">ประกัน</th><th>ยอดค้าง</th>
+          <th class="hide-m">กำหนดชำระ</th><th class="hide-m">เซลล์</th><th></th>
+        </tr></thead>
+        <tbody id="debtBody"><tr><td colspan="8"><div class="empty">กดรีเฟรชเพื่อโหลดข้อมูล</div></td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+  <section class="view" id="registry">
+    <div class="section-head">
+      <div><h2>ทะเบียนตัวแทน / VIP <span class="secret-tag">เฉพาะผู้อนุมัติ</span></h2>
+      <div class="desc">เปิดโค้ด + ตั้งเงื่อนไขส่วนลด — แก้ไขได้เฉพาะผู้อนุมัติ/การเงิน</div></div>
+      <button class="btn" onclick="openRegModal()">+ เปิดโค้ดตัวแทน/VIP</button>
+    </div>
+    <div class="toolbar">
+      <input class="search" id="regSearch" placeholder="ค้นหา รหัส / ชื่อ" oninput="renderRegistry()">
+      <select class="filter" id="regFilterType" onchange="renderRegistry()">
+        <option value="">ตัวแทน + VIP</option>
+        <option value="agent">ตัวแทน</option>
+        <option value="vip">VIP</option>
+      </select>
+    </div>
+    <div class="card-table">
+      <table>
+        <thead><tr>
+          <th>รหัส / ชื่อ</th><th>ประเภท</th><th class="hide-m">เซลล์</th>
+          <th class="hide-m">บริษัทที่ขายได้</th><th>ส่วนลดตามประเภท</th><th class="hide-m">ข้อยกเว้น</th><th></th>
+        </tr></thead>
+        <tbody id="regBody"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div class="overlay" id="custOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3 id="custModalTitle">เพิ่มลูกค้า/ตัวแทน</h3><button class="x" onclick="closeCustModal()">&times;</button></div>
+    <div class="modal-body">
+      <div class="grid2">
+        <div class="field">
+          <label>ส่งงานผ่าน <span class="req">*</span></label>
+          <select id="c_type" onchange="toggleCustFields()">
+            <option value="general">ลูกค้าทั่วไป (ส่งเอง)</option>
+            <option value="agent">ผ่านตัวแทน</option>
+            <option value="vip">ผ่าน VIP</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>รูปแบบ <span class="req">*</span></label>
+          <select id="c_entity" onchange="updateNameLabel()">
+            <option value="person">บุคคลธรรมดา</option>
+            <option value="company">นิติบุคคล</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field" id="codeField" style="display:none">
+          <label id="c_codeLabel">สังกัดตัวแทน <span class="req">*</span></label>
+          <select id="c_code" onchange="syncSellerFromCode()"></select>
+          <div class="sub-note" id="c_codeNote">เลือกจากที่เปิดโค้ดไว้ — เพิ่มใหม่ได้ที่หน้าตัวแทน/VIP</div>
+        </div>
+        <div class="field" id="custCodeField">
+          <label id="c_custCodeLabel">รหัสเจ้าของรถ</label>
+          <input id="c_custCode" readonly placeholder="ออกอัตโนมัติเมื่อบันทึก">
+          <div class="sub-note" id="c_custCodeNote">KHC-xxxx (ระบบออกให้อัตโนมัติ)</div>
+        </div>
+      </div>
+      <div class="field"><label id="c_nameLabel">ชื่อเจ้าของรถ / ผู้เอาประกัน <span class="req">*</span></label><input id="c_name" placeholder="ชื่อ-นามสกุลเจ้าของรถ"></div>
+      <div class="field" id="idnumField"><label id="c_idnumLabel">เลขบัตรประชาชน</label><input id="c_idnum" placeholder="เลข 13 หลัก"></div>
+      <div class="grid2">
+        <div class="field"><label>เบอร์ติดต่อ 1 <span class="req">*</span></label><input id="c_phone1" placeholder="08x-xxx-xxxx"></div>
+        <div class="field"><label>เบอร์ติดต่อ 2</label><input id="c_phone2" placeholder="(ถ้ามี)"></div>
+      </div>
+      <div class="field"><label>ที่อยู่ <span class="req">*</span></label><input id="c_address" placeholder="ที่อยู่เจ้าของรถ"></div>
+      <div class="grid2">
+        <div class="field">
+          <label>แหล่งที่มา <span class="req">*</span></label>
+          <select id="c_source"><option value="">— เลือก —</option></select>
+        </div>
+        <div class="field">
+          <label>เซลล์ผู้ดูแล <span class="req">*</span></label>
+          <select id="c_sellerMain"></select>
+          <div class="sub-note" id="c_sellerNote">ผ่านตัวแทน A/B/C ระบบเติมเซลล์ให้อัตโนมัติ</div>
+        </div>
+      </div>
+      <div class="field"><label>หมายเหตุ</label><input id="c_contact" placeholder="เช่น รถคันที่ 2, ต่อทุกปี"></div>
+
+      <div id="secretFields" style="display:none">
+        <div class="calc-box" style="background:var(--paper);border-color:var(--line)">
+          <h4 style="color:var(--ink-soft)">เงื่อนไขส่วนลด <span class="secret-tag">จัดการที่หน้าทะเบียนตัวแทน/VIP</span></h4>
+          <div id="c_discReadonly" class="sub-note" style="line-height:1.7">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeCustModal()">ยกเลิก</button>
+      <button class="btn" onclick="saveCust()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="saleOverlay">
+  <div class="modal">
+    <div class="modal-head"><h3 id="saleModalTitle">บันทึกการขายใหม่</h3><button class="x" onclick="closeSaleModal()">&times;</button></div>
+    <div class="modal-body">
+      <div class="grid2">
+        <div class="field"><label>ลูกค้า / ผู้ส่งงาน <span class="req">*</span></label><select id="s_customer" onchange="onPickCustomer()"></select></div>
+        <div class="field"><label>ผู้เอาประกัน (ชื่อบนกรมธรรม์)</label><input id="s_insured" placeholder="เว้นว่าง = ชื่อเดียวกับลูกค้า"></div>
+      </div>
+      <div class="grid3">
+        <div class="field"><label>วันที่ขาย</label><input id="s_date" type="date"></div>
+        <div class="field"><label>ผู้ขาย <span class="req">*</span></label><select id="s_seller"></select></div>
+        <div class="field"><label>ทะเบียนรถ</label><input id="s_plate" placeholder="เช่น 1กก1234"></div>
+      </div>
+      <div class="grid3">
+        <div class="field"><label>รหัสรถ (ประเภทรถ)</label><select id="s_vehCode" onchange="recalcSale()"></select></div>
+        <div class="field" style="grid-column:span 2"></div>
+      </div>
+      <div class="grid3">
+        <div class="field"><label>ประเภทประกัน <span class="req">*</span></label>
+          <select id="s_instype" onchange="pullDiscount()">
+            <option value="ป.1">ป.1</option><option value="ป.2+">ป.2+</option><option value="ป.3+">ป.3+</option>
+            <option value="ป.2">ป.2</option><option value="ป.3">ป.3</option>
+            <option value="พ.ร.บ.">พ.ร.บ.</option><option value="อัคคีภัย">อัคคีภัย</option><option value="Non-Motor">Non-Motor</option>
+          </select>
+        </div>
+        <div class="field" id="garageField"><label>เบี้ยห้าง/อู่</label>
+          <select id="s_garage"><option value="ห้าง">ซ่อมห้าง</option><option value="อู่">ซ่อมอู่</option></select>
+        </div>
+        <div class="field"><label>บริษัทประกัน <span class="req">*</span></label><select id="s_insurer" onchange="pullDiscount()"></select></div>
+      </div>
+      <div class="grid3">
+        <div class="field"><label>เลขที่กรมธรรม์</label><input id="s_policy" placeholder="เลขกรมธรรม์"></div>
+        <div class="field"><label>เบี้ยสุทธิ (ก่อนภาษี) <span class="req">*</span></label><input id="s_premium" type="number" placeholder="0" oninput="recalcSale()"></div>
+        <div class="field"><label>ส่วนลดลูกค้า (บาท)</label><input id="s_discount" type="number" placeholder="0" oninput="recalcSale()"></div>
+      </div>
+      <div class="grid3">
+        <div class="field"><label>ค่าส่ง (บาท)</label><input id="s_shipping" type="number" placeholder="0" oninput="recalcSale()"></div>
+        <div class="field"><label>ภาษี 1% รอรับคืน (คีย์เอง)</label><input id="s_tax1" type="number" placeholder="0"></div>
+        <div class="field"><label>เงื่อนไขการขาย</label>
+          <select id="s_payterm">
+            <option value="cash">เงินสด</option><option value="exchange">กรมแลกเงิน</option>
+            <option value="bill">วางบิล</option><option value="install">ผ่อน</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="calc-box">
+        <h4>ระบบคำนวณให้อัตโนมัติ</h4>
+        <div class="calc-row"><span class="lbl">เพดานส่วนลดที่ตกลง</span><span class="val" id="o_cap">—</span></div>
+        <div class="calc-row"><span class="lbl">ส่วนลดที่กรอกคิดเป็น %</span><span class="val" id="o_discpct">—</span></div>
+        <div class="calc-row"><span class="lbl">ภาษี 3% (เมื่อลด &gt; 1,000)</span><span class="val" id="o_tax3">—</span></div>
+        <div class="calc-row"><span class="lbl">ส่วนลดหลังหักภาษี</span><span class="val" id="o_discafter">—</span></div>
+        <div class="calc-row total"><span class="lbl">นับยอด</span><span class="val" id="o_count">—</span></div>
+      </div>
+      <div class="ok-flag" id="discOk"></div>
+      <div class="warn-flag" id="discWarn"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeSaleModal()">ยกเลิก</button>
+      <button class="btn" onclick="saveSale()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTRY MODAL (เปิดโค้ดตัวแทน/VIP) -->
+<div class="overlay" id="regOverlay">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-head"><h3 id="regModalTitle">เปิดโค้ดตัวแทน/VIP</h3><button class="x" onclick="closeRegModal()">&times;</button></div>
+    <div class="modal-body">
+      <div class="grid3">
+        <div class="field">
+          <label>ประเภท <span class="req">*</span></label>
+          <select id="r_type" onchange="onRegTypeChange()">
+            <option value="agent">ตัวแทน</option>
+            <option value="vip">ลูกค้า VIP</option>
+          </select>
+        </div>
+        <div class="field" id="r_codeField">
+          <label>รหัสตัวแทน <span class="req">*</span></label>
+          <input id="r_code" placeholder="เช่น A-29" oninput="onRegCodeChange()">
+        </div>
+        <div class="field">
+          <label>เซลล์ผู้ดูแล <span class="req">*</span></label>
+          <select id="r_seller"></select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>ชื่อ <span class="req">*</span></label><input id="r_name" placeholder="ชื่อตัวแทน/VIP"></div>
+        <div class="field"><label>วิธีชำระเริ่มต้น</label>
+          <select id="r_payterm">
+            <option value="cash">เงินสด</option><option value="exchange">กรมแลกเงิน</option>
+            <option value="bill">วางบิล</option><option value="install">ผ่อน</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- เช็กลิสต์บริษัทที่ขายได้ -->
+      <div class="reg-block">
+        <h4>บริษัทประกันที่ขายได้ <span class="req">*</span></h4>
+        <div class="sub-note" style="margin-bottom:8px">ขายได้เฉพาะที่ติ๊ก — บริษัทอื่นยังเลือกตอนขายได้ แต่ระบบจะเตือนและไม่ขึ้นส่วนลดให้</div>
+        <div class="ins-check" id="r_insurers"></div>
+      </div>
+
+      <!-- ชั้น 1: ส่วนลดตามประเภท -->
+      <div class="reg-block">
+        <h4>ส่วนลดตามประเภทประกัน (%)</h4>
+        <div class="sub-note" style="margin-bottom:8px">กรอกเฉพาะประเภทที่ตัวแทนนี้ขาย — ประเภทที่ไม่ขายเว้นว่าง</div>
+        <div class="type-disc" id="r_typeDisc"></div>
+      </div>
+
+      <!-- ชั้น 2+3: ข้อยกเว้น -->
+      <div class="reg-block">
+        <h4>ข้อยกเว้น — เฉพาะบริษัท×ประเภท (และรหัสรถถ้าจำเป็น)</h4>
+        <div class="sub-note" style="margin-bottom:8px">เพิ่มเฉพาะเคสที่ต่างจากส่วนลดตามประเภท · เว้นรหัสรถ = ใช้กับทุกรถ · เลือกรหัสรถ = เฉพาะรถนั้น</div>
+        <div class="rexc-head"><span>บริษัท</span><span>ประเภท</span><span>รหัสรถ (ถ้ามี)</span><span>ส่วนลด%</span><span></span></div>
+        <div id="rexcWrap"></div>
+        <button class="add-exc" onclick="addRexcRow()">+ เพิ่มข้อยกเว้น</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeRegModal()">ยกเลิก</button>
+      <button class="btn" onclick="saveReg()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- PASSWORD GATE -->
+<div class="overlay" id="gateOverlay">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-head"><h3>เข้าหน้าทะเบียนตัวแทน/VIP</h3><button class="x" onclick="closeGate()">&times;</button></div>
+    <div class="modal-body">
+      <div class="hint-bar" style="background:var(--amber-soft);border:1px solid #ecd9a3;color:#856404;border-radius:8px;padding:10px 14px;font-size:.85rem;margin-bottom:14px">
+        หน้านี้เฉพาะผู้อนุมัติ/การเงิน — ใส่รหัสผ่านเพื่อเข้า
+      </div>
+      <div class="field"><label>รหัสผ่าน</label><input id="gatePass" type="password" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter')tryGate()"></div>
+      <div id="gateErr" style="color:var(--red);font-size:.82rem;display:none">รหัสผ่านไม่ถูกต้อง</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeGate()">ยกเลิก</button>
+      <button class="btn" onclick="tryGate()">เข้าสู่หน้า</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const INSURERS=[
+  {name:'กรุงเทพ',tier:'กำหนด'},{name:'คุ้มภัย',tier:'กำหนด'},{name:'HAIB',tier:'กำหนด'},
+  {name:'วิริยะ',tier:'อื่น'},{name:'ไอโออิ',tier:'อื่น'},
+  {name:'ทิพย',tier:'นอกรายชื่อ'},{name:'เมืองไทย',tier:'นอกรายชื่อ'},{name:'อลิอันซ์ อยุธยา',tier:'นอกรายชื่อ'},
+  {name:'LMG',tier:'นอกรายชื่อ'},{name:'แอกซ่า',tier:'นอกรายชื่อ'},{name:'ชับบ์ สามัคคี',tier:'นอกรายชื่อ'},
+  {name:'MSIG',tier:'นอกรายชื่อ'},{name:'ธนชาต',tier:'นอกรายชื่อ'},
+];
+const INSTYPES=['ป.1','ป.2+','ป.3+','ป.2','ป.3','พ.ร.บ.','อัคคีภัย','Non-Motor'];
+// รหัสรถยนต์มาตรฐาน (กรมการประกันภัย)
+const VEHCODES=[
+  {code:'110',label:'110 — รถยนต์นั่ง ส่วนบุคคล'},
+  {code:'120',label:'120 — รถยนต์นั่ง เพื่อการพาณิชย์'},
+  {code:'210',label:'210 — รถโดยสาร ส่วนบุคคล'},
+  {code:'220',label:'220 — รถโดยสาร เพื่อการพาณิชย์'},
+  {code:'230',label:'230 — รถโดยสาร รับจ้างสาธารณะ'},
+  {code:'320',label:'320 — รถบรรทุก เพื่อการพาณิชย์'},
+  {code:'340',label:'340 — รถบรรทุก เพื่อการพาณิชย์'},
+  {code:'420',label:'420 — รถลากจูง เพื่อการพาณิชย์'},
+  {code:'520',label:'520 — รถพ่วง เพื่อการพาณิชย์'},
+  {code:'540',label:'540 — รถพ่วง เพื่อการพาณิชย์'},
+  {code:'610',label:'610 — รถจักรยานยนต์ ส่วนบุคคล'},
+  {code:'620',label:'620 — รถจักรยานยนต์ เพื่อการพาณิชย์'},
+  {code:'630',label:'630 — รถจักรยานยนต์ รับจ้างสาธารณะ'},
+  {code:'730',label:'730 — รถยนต์นั่งรับจ้าง (ไม่เกิน 7 ที่นั่ง)'},
+  {code:'801',label:'801 — รถยนต์ป้ายแดง'},
+  {code:'802',label:'802 — รถพยาบาล'},
+  {code:'803',label:'803 — รถดับเพลิง'},
+  {code:'804',label:'804 — รถใช้ในการเกษตร'},
+  {code:'805',label:'805 — รถใช้ในการก่อสร้าง'},
+  {code:'806',label:'806 — รถอื่น ๆ'},
+];
+function vehLabel(code){ const v=VEHCODES.find(x=>x.code===code); return v?v.label:code; }
+// รหัสตัวแทน A/B/C = กลุ่มเซลล์ผู้ดูแล (ทีมขาย A ทีมหลัก)
+const SELLER_BY_PREFIX={A:'นาถยา ศรีรักษา',B:'วาสนา ภูขลิบเงิน',C:'จิณณพัต ไชยกำบัง'};
+// รายชื่อผู้ขายทั้งหมด (ชื่อจริง) — ทีม A หลัก + ทีม B
+const SELLERS=[
+  'นาถยา ศรีรักษา','วาสนา ภูขลิบเงิน','จิณณพัต ไชยกำบัง',
+  'ธนันพัชร์ สนทอง','จารุวรรณ ภูมิสุทธิ์','กัลยรัตน์ ภูบัวดวง','เยาวภา ศรีวิชา',
+  'ชัญญาภัค บุญยอ','นวรัตน์ นนทา','พิชญากรณ์ ไชยเพชร','บุสดี ภูมิ่งเดือน',
+  'คนึงนุช ภูปาทา','วริศรา บุษบง','อาริยา ศรีหามาต','ธิดา ภูดอนนา',
+];
+const TYPE_LABEL={general:'ลูกค้าทั่วไป',agent:'ตัวแทน',vip:'VIP'};
+const TYPE_BADGE={general:'b-general',agent:'b-agent',vip:'b-vip'};
+const PAYTERM_LABEL={cash:'เงินสด',exchange:'กรมแลกเงิน',bill:'วางบิล',install:'ผ่อน'};
+const SOURCES=['KHC Broker','ATS','HONDA (Sale)','HONDA (BP)','HONDA (Service)','แนะนำ','Social'];
+const ENTITY_LABEL={person:'บุคคลธรรมดา',company:'นิติบุคคล'};
+
+let customers=[], sales=[], payments=[], editingCust=null, editingSale=null;
+let selectedPaySaleId=null;
+const fmt=n=>Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:2});
+const todayISO=()=>new Date().toISOString().slice(0,10);
+
+function seed(){
+  customers=[
+    // --- ทะเบียนตัวแทน/VIP (มีเงื่อนไขส่วนลด) ---
+    {id:2,custCode:'A-06',type:'agent',entity:'company',name:'หจก.สามทองบริการ',phone1:'092-3934645',phone2:'',address:'',source:'KHC Broker',contact:'ซ้อเก๋ / วางบิล',
+     seller:'นาถยา ศรีรักษา',payterm:'bill',
+     insurers:['วิริยะ','กรุงเทพ','ทิพย','คุ้มภัย'],
+     typeDisc:{'ป.1':16,'ป.2+':16,'ป.3':12,'พ.ร.บ.':10},
+     exceptions:[
+       {insurer:'ทิพย',instype:'ป.3',vehCode:'',disc:7},
+       {insurer:'วิริยะ',instype:'ป.3',vehCode:'320',disc:0},
+     ]},
+    {id:3,custCode:'A-05',type:'agent',entity:'company',name:'หจก.กาฬสินธุ์เอสพีออยล์',phone1:'081-8700456',phone2:'',address:'',source:'KHC Broker',contact:'ซ้อดวงใจ / วางบิล',
+     seller:'นาถยา ศรีรักษา',payterm:'bill',insurers:['วิริยะ','กรุงเทพ'],typeDisc:{'ป.1':15,'ป.3':15,'พ.ร.บ.':15},exceptions:[]},
+    {id:4,custCode:'B-04',type:'agent',entity:'company',name:'บจก.แสงประทีปเดินรถ',phone1:'081-6709790',phone2:'',address:'',source:'KHC Broker',contact:'คุณปุ้ย / วางบิล',
+     seller:'วาสนา ภูขลิบเงิน',payterm:'bill',insurers:['วิริยะ'],typeDisc:{'ป.1':13,'ป.3':13},exceptions:[]},
+    {id:5,custCode:'V-001',type:'vip',entity:'person',name:'เจ๊จิ๋ม',phone1:'',phone2:'',address:'',source:'แนะนำ',contact:'',
+     seller:'จิณณพัต ไชยกำบัง',payterm:'cash',insurers:['กรุงเทพ','คุ้มภัย'],typeDisc:{'ป.1':15,'ป.2+':15},exceptions:[]},
+    // --- เจ้าของรถ (kind owner, agentCode=สังกัด) ---
+    {id:10,kind:'owner',custCode:'KHC-0001',via:'general',agentCode:'',entity:'person',name:'สมชาย ใจดี',idnum:'1234567890123',phone1:'081-234-5678',phone2:'',address:'กาฬสินธุ์',source:'HONDA (Sale)',contact:'',seller:'ธิดา ภูดอนนา'},
+    {id:11,kind:'owner',custCode:'KHC-0002',via:'agent',agentCode:'A-06',entity:'person',name:'นาย ก (รถใต้สามทอง)',idnum:'',phone1:'',phone2:'',address:'',source:'ตัวแทน',contact:'รถคันที่ 1',seller:'นาถยา ศรีรักษา'},
+  ];
+  sales=[
+    {id:101,customerId:11,insured:'นาย ก',date:todayISO(),seller:'นาถยา ศรีรักษา',plate:'กข-1234',vehCode:'110',
+     instype:'ป.1',garage:'อู่',insurer:'วิริยะ',policy:'VR6901001',premium:15000,discount:2400,shipping:100,tax1:0,payterm:'install',savedCapPct:16,agentCode:'A-06'},
+    {id:102,customerId:11,insured:'นาย ก (รถบรรทุก)',date:todayISO(),seller:'นาถยา ศรีรักษา',plate:'บท-5678',vehCode:'320',
+     instype:'ป.3',garage:'อู่',insurer:'วิริยะ',policy:'VR6901002',premium:8000,discount:0,shipping:0,tax1:0,payterm:'bill',savedCapPct:0,agentCode:'A-06'},
+    {id:103,customerId:10,insured:'สมชาย ใจดี',date:todayISO(),seller:'ธิดา ภูดอนนา',plate:'กส-9999',vehCode:'110',
+     instype:'ป.1',garage:'ห้าง',insurer:'กรุงเทพ',policy:'BKI6901001',premium:20000,discount:1600,shipping:0,tax1:0,payterm:'cash',savedCapPct:null,agentCode:''},
+  ];
+  payments=[
+    {id:3001,saleId:101,date:'2569-02-15',amount:4450,method:'โอน',installNo:1,receiptNo:'KHC6902001',remark:''},
+    {id:3002,saleId:101,date:'2569-03-15',amount:4450,method:'โอน',installNo:2,receiptNo:'KHC6903001',remark:''},
+  ];
+}
+
+// ===== payment helpers =====
+function paymentsOf(saleId){ return payments.filter(p=>p.saleId===saleId); }
+function totalPaid(saleId){ return paymentsOf(saleId).reduce((s,p)=>s+(+p.amount||0),0); }
+function saleGrandTotal(s){ return (+s.premium||0)+( +s.shipping||0)-(+s.discount||0); }
+function payBalance(s){ return saleGrandTotal(s)-totalPaid(s.id); }
+function payStatus(s){
+  const bal=payBalance(s), paid=totalPaid(s.id);
+  if(bal<=0.01) return 'ชำระครบ';
+  if(paid>0) return 'ค้างบางส่วน';
+  return 'ยังไม่ชำระ';
+}
+function payStatusBadge(s){
+  const st=payStatus(s);
+  if(st==='ชำระครบ') return `<span class="badge b-vip" style="font-size:.75rem">✓ ครบ</span>`;
+  if(st==='ค้างบางส่วน') return `<span class="badge b-agent" style="font-size:.75rem">⏳ บางส่วน</span>`;
+  return `<span class="badge b-general" style="font-size:.75rem">— ยังไม่ชำระ</span>`;
+}
+
+function insurerTier(name){const i=INSURERS.find(x=>x.name===name);return i?i.tier:'นอกรายชื่อ';}
+function isCounted(name){return insurerTier(name)!=='นอกรายชื่อ';}
+function tax3Of(d){return d>1000?d*0.03:0;}
+function sellerFromCode(code){
+  if(!code) return '';
+  const p=code.trim().charAt(0).toUpperCase();
+  return SELLER_BY_PREFIX[p]||'';
+}
+// แยกชนิด record ใน customers array
+function owners(){ return customers.filter(c=>c.kind==='owner'); }
+// คืนตัวแทน/VIP (ทะเบียน) ที่เจ้าของรถรายนี้สังกัด — ใช้เป็นแหล่งเงื่อนไขส่วนลด
+function registryOf(owner){
+  if(!owner||!owner.agentCode) return null;
+  return customers.find(x=>x.custCode===owner.agentCode&&x.kind!=='owner')||null;
+}
+function regEntries(){ return customers.filter(c=>c.type==='agent'||c.type==='vip'); }
+function findByCode(code){ return customers.find(c=>c.custCode===code&&(c.type==='agent'||c.type==='vip')); }
+// คืนส่วนลด% ตามลำดับเจาะจง: ชั้น3 (บริษัท×ประเภท×รหัสรถ) → ชั้น2 (บริษัท×ประเภท) → ชั้น1 (ตามประเภท)
+// คืน {pct, level} level: 'veh'|'company'|'type'|null
+function capDiscountInfo(cust,instype,insurer,vehCode){
+  if(!cust||cust.type==='general') return {pct:null,level:null};
+  const exc=cust.exceptions||[];
+  // ชั้น 3: ตรงทั้งบริษัท ประเภท และรหัสรถ
+  if(vehCode){
+    const e3=exc.find(e=>e.insurer===insurer&&e.instype===instype&&e.vehCode===vehCode);
+    if(e3) return {pct:e3.disc,level:'veh'};
+  }
+  // ชั้น 2: บริษัท×ประเภท (ข้อยกเว้นที่ไม่ระบุรหัสรถ)
+  const e2=exc.find(e=>e.insurer===insurer&&e.instype===instype&&!e.vehCode);
+  if(e2) return {pct:e2.disc,level:'company'};
+  // ชั้น 1: ส่วนลดตามประเภท
+  const td=cust.typeDisc||{};
+  if(td[instype]!=null) return {pct:td[instype],level:'type'};
+  return {pct:null,level:null};
+}
+function capDiscountPct(cust,instype,insurer,vehCode){
+  return capDiscountInfo(cust,instype,insurer,vehCode).pct;
+}
+// ตัวแทนขายบริษัทนี้ได้ไหม (อยู่ในเช็กลิสต์ insurers)
+function canSellInsurer(cust,insurer){
+  if(!cust||cust.type==='general') return true;
+  if(!cust.insurers||!cust.insurers.length) return true; // ไม่ได้ระบุ = ขายได้หมด
+  return cust.insurers.includes(insurer);
+}
+
+function fillSellerFilters(){
+  document.getElementById('custFilterSeller').innerHTML='<option value="">ทุกเซลล์</option>'+SELLERS.map(s=>`<option value="${s}">${s}</option>`).join('');
+}
+function renderCustomers(){
+  const q=(document.getElementById('custSearch').value||'').toLowerCase().trim();
+  const ft=document.getElementById('custFilterType').value;
+  const fs=document.getElementById('custFilterSeller').value;
+  const list=owners().filter(c=>{
+    const m=!q||[c.name,c.custCode,c.phone1,c.phone2,c.agentCode].join(' ').toLowerCase().includes(q);
+    return m&&(!ft||c.via===ft)&&(!fs||c.seller===fs);
+  });
+  const body=document.getElementById('custBody');
+  if(!list.length){body.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="big">ยังไม่มีเจ้าของรถ</div>กดเพิ่มเพื่อเริ่ม</div></td></tr>`;return;}
+  const VIA_LABEL={general:'ลูกค้าทั่วไป',agent:'ผ่านตัวแทน',vip:'ผ่าน VIP'};
+  const VIA_BADGE={general:'b-general',agent:'b-agent',vip:'b-vip'};
+  body.innerHTML=list.map(c=>{
+    const agent=c.agentCode?customers.find(x=>x.custCode===c.agentCode):null;
+    const affil=c.agentCode?`${c.agentCode}${agent?' — '+agent.name:''}`:'<span class="cust-sub">—</span>';
+    return `<tr>
+      <td>${c.custCode?`<span class="code-chip">${c.custCode}</span> `:''}<span class="cust-name">${c.name}</span><div class="cust-sub">${ENTITY_LABEL[c.entity]||''}${c.contact?' · '+c.contact:''}</div></td>
+      <td><span class="badge ${VIA_BADGE[c.via]}">${VIA_LABEL[c.via]}</span></td>
+      <td class="hide-m" style="font-size:.82rem">${affil}</td>
+      <td class="hide-m">${c.seller||'-'}</td>
+      <td class="hide-m">${c.phone1||'<span class="cust-sub">—</span>'}</td>
+      <td><div class="row-actions">
+        <button class="icon-btn" onclick="openCustModal(${c.id})">แก้</button>
+        <button class="icon-btn" onclick="delCust(${c.id})">ลบ</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderSales(){
+  const q=(document.getElementById('saleSearch').value||'').toLowerCase().trim();
+  const ft=document.getElementById('saleFilterType').value;
+  const fc=document.getElementById('saleFilterCount').value;
+  const list=sales.filter(s=>{
+    const c=customers.find(x=>x.id===s.customerId);
+    const hay=[c?.name,c?.custCode,s.insured,s.policy,s.plate,s.seller].join(' ').toLowerCase();
+    const counted=isCounted(s.insurer);
+    return (!q||hay.includes(q))&&(!ft||s.instype===ft)&&(!fc||(fc==='yes'?counted:!counted));
+  }).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const body=document.getElementById('salesBody');
+  if(!list.length){body.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="big">ไม่พบรายการ</div>ลองเปลี่ยนคำค้นหา หรือบันทึกการขายใหม่</div></td></tr>`;return;}
+  body.innerHTML=list.map(s=>{
+    const c=customers.find(x=>x.id===s.customerId);
+    const counted=isCounted(s.insurer);
+    const dpct=s.premium>0?(s.discount/s.premium*100):0;
+    const cap=(s.savedCapPct!=null)?s.savedCapPct:capDiscountPct(registryOf(c),s.instype,s.insurer,s.vehCode);
+    const over=(cap!=null&&dpct>cap+0.001);
+    return `<tr>
+      <td>${c?.custCode?`<span class="code-chip">${c.custCode}</span> `:''}<span class="cust-name">${c?c.name:'-'}</span><div class="cust-sub">${s.insured||''}${s.plate?' · '+s.plate:''}</div></td>
+      <td class="hide-m">${s.instype}${s.instype==='ป.1'?' ('+s.garage+')':''}</td>
+      <td class="hide-m">${s.insurer}</td>
+      <td class="money">฿${fmt(s.premium)}</td>
+      <td class="money">${s.discount?`฿${fmt(s.discount)} <span class="cust-sub">(${dpct.toFixed(2)}%)</span>${over?' <span class="badge b-vip">เกิน</span>':''}`:'-'}</td>
+      <td>${counted?'<span class="badge b-count">นับยอด</span>':'<span class="badge b-nocount">ไม่นับ</span>'}</td>
+      <td class="hide-m">${s.seller}</td>
+      <td><div class="row-actions">
+        <button class="icon-btn" onclick="openSaleModal(${s.id})">แก้</button>
+        <button class="icon-btn" onclick="delSale(${s.id})">ลบ</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleCustFields(){
+  const t=document.getElementById('c_type').value;
+  document.getElementById('codeField').style.display=(t==='agent'||t==='vip')?'block':'none';
+  document.getElementById('custCodeField').style.display='block'; // เจ้าของรถมีรหัสเสมอ
+  if(t==='agent'||t==='vip'){
+    document.getElementById('c_codeLabel').innerHTML=(t==='agent'?'สังกัดตัวแทน':'สังกัด VIP')+' <span class="req">*</span>';
+    document.getElementById('c_codeNote').textContent='เลือกจากที่เปิดโค้ดไว้ — เพิ่มใหม่ได้ที่หน้าตัวแทน/VIP';
+    fillCodeDropdown(t);
+  }
+  syncSellerFromCode();
+  // แสดงเงื่อนไขส่วนลดของตัวแทน/VIP ที่สังกัด (อ่านอย่างเดียว)
+  const box=document.getElementById('secretFields');
+  if(t==='agent'||t==='vip'){
+    box.style.display='block';
+    const code=document.getElementById('c_code').value;
+    const reg=code?customers.find(x=>x.custCode===code):null;
+    const rb=document.getElementById('c_discReadonly');
+    if(reg){
+      const td=reg.typeDisc||{};
+      const tdText=Object.keys(td).length?Object.entries(td).map(([k,v])=>`${k} ${v}%`).join(' · '):'ยังไม่ตั้ง';
+      const insText=(reg.insurers||[]).length?reg.insurers.join(', '):'ทุกบริษัท';
+      const excText=(reg.exceptions||[]).length?(reg.exceptions||[]).map(e=>`${e.insurer} ${e.instype}${e.vehCode?' ('+e.vehCode+')':''} = ${e.disc}%`).join(' · '):'—';
+      rb.innerHTML=`<b>${reg.custCode} ${reg.name}</b><br><b>บริษัทที่ขายได้:</b> ${insText}<br><b>ส่วนลดตามประเภท:</b> ${tdText}<br><b>ข้อยกเว้น:</b> ${excText}`;
+    } else {
+      rb.innerHTML='เลือกตัวแทน/VIP เพื่อดูเงื่อนไขส่วนลด';
+    }
+  } else {
+    box.style.display='none';
+  }
+}
+// เติม dropdown รหัส — ชื่อ จากตัวแทน/VIP ที่เปิดไว้ในทะเบียน
+function fillCodeDropdown(t){
+  const sel=document.getElementById('c_code');
+  const list=customers.filter(c=>c.type===t&&c.kind!=='owner'&&c.custCode);
+  const cur=sel.value;
+  sel.innerHTML=`<option value="">— เลือก${t==='agent'?'ตัวแทน':' VIP'} —</option>`+
+    list.map(c=>`<option value="${c.custCode}">${c.custCode} — ${c.name}</option>`).join('');
+  if(cur) sel.value=cur;
+}
+function updateNameLabel(){
+  const company=document.getElementById('c_entity').value==='company';
+  document.getElementById('c_nameLabel').innerHTML=(company?'ชื่อบริษัท':'ชื่อ-นามสกุล')+' <span class="req">*</span>';
+  document.getElementById('c_name').placeholder=company?'เช่น หจก. / บจก. ...':'ชื่อ-นามสกุลลูกค้า';
+  document.getElementById('c_idnumLabel').textContent=company?'เลขทะเบียนนิติบุคคล':'เลขบัตรประชาชน';
+  document.getElementById('c_idnum').placeholder=company?'เลข 13 หลัก (นิติบุคคล)':'เลข 13 หลัก';
+}
+function syncSellerFromCode(){
+  const t=document.getElementById('c_type').value;
+  const sel=document.getElementById('c_sellerMain');
+  const note=document.getElementById('c_sellerNote');
+  const src=document.getElementById('c_source');
+  const codeVal=document.getElementById('c_code').value;
+  if(t==='agent'){
+    // เซลล์จาก prefix รหัสตัวแทน
+    const s=sellerFromCode(codeVal);
+    if(s){ sel.value=s; sel.disabled=true; }
+    else { sel.disabled=false; }
+    note.style.display='block';
+    // แหล่งที่มา = ตัวแทน (ล็อก)
+    setSourceAuto('ตัวแทน');
+  } else if(t==='vip'){
+    // เซลล์ดึงจากทะเบียน VIP ที่เลือก
+    const vip=customers.find(c=>c.custCode===codeVal&&c.type==='vip');
+    if(vip&&vip.seller){ sel.value=vip.seller; sel.disabled=true; }
+    else { sel.disabled=false; }
+    note.style.display='block';
+    setSourceAuto('ลูกค้า VIP');
+  } else {
+    sel.disabled=false; note.style.display='none';
+    // ลูกค้าทั่วไป: ปลดล็อกแหล่งที่มาให้เลือกเอง
+    src.disabled=false;
+    fillSourceOptions(SOURCES);
+  }
+  // อัปเดตป้ายบังคับเบอร์/ที่อยู่
+  updateRequiredMarks(t);
+}
+// ตั้งแหล่งที่มาอัตโนมัติ + ล็อก (สำหรับผ่านตัวแทน/VIP)
+function setSourceAuto(val){
+  const src=document.getElementById('c_source');
+  fillSourceOptions([val]);
+  src.value=val; src.disabled=true;
+}
+function fillSourceOptions(arr){
+  const src=document.getElementById('c_source');
+  const cur=src.value;
+  src.innerHTML='<option value="">— เลือก —</option>'+arr.map(s=>`<option value="${s}">${s}</option>`).join('');
+  if(cur&&arr.includes(cur)) src.value=cur;
+}
+// ผ่านตัวแทน/VIP: เบอร์/ที่อยู่ไม่บังคับ (เว้นว่าง = ติดต่อผ่านตัวแทน)
+function updateRequiredMarks(t){
+  const viaAgent=(t==='agent'||t==='vip');
+  const phoneLab=document.querySelector('label[for-phone1]')||document.getElementById('c_phone1').closest('.field').querySelector('label');
+  const addrLab=document.getElementById('c_address').closest('.field').querySelector('label');
+  phoneLab.innerHTML='เบอร์ติดต่อ 1'+(viaAgent?'':' <span class="req">*</span>');
+  addrLab.innerHTML='ที่อยู่'+(viaAgent?'':' <span class="req">*</span>');
+  document.getElementById('c_phone1').placeholder=viaAgent?'(ไม่บังคับ — ติดต่อผ่านตัวแทน)':'08x-xxx-xxxx';
+  document.getElementById('c_address').placeholder=viaAgent?'(ไม่บังคับ — ติดต่อผ่านตัวแทน)':'ที่อยู่เจ้าของรถ';
+}
+function genCustCode(type){
+  if(type==='vip'){
+    const nums=customers.filter(c=>c.custCode&&c.custCode.startsWith('V-')).map(c=>+c.custCode.slice(2)||0);
+    const next=(nums.length?Math.max(...nums):0)+1;
+    return 'V-'+String(next).padStart(3,'0');
+  }
+  if(type==='general'){
+    const nums=customers.filter(c=>c.custCode&&c.custCode.startsWith('KHC-')).map(c=>+c.custCode.slice(4)||0);
+    const next=(nums.length?Math.max(...nums):0)+1;
+    return 'KHC-'+String(next).padStart(4,'0');
+  }
+  return '';
+}
+
+function openCustModal(id){
+  editingCust=id||null;
+  document.getElementById('custModalTitle').textContent=id?'แก้ไขเจ้าของรถ':'เพิ่มเจ้าของรถ';
+  document.getElementById('c_source').innerHTML='<option value="">— เลือก —</option>'+SOURCES.map(s=>`<option value="${s}">${s}</option>`).join('');
+  document.getElementById('c_sellerMain').innerHTML='<option value="">— เลือกเซลล์ —</option>'+SELLERS.map(s=>`<option value="${s}">${s}</option>`).join('');
+  const g=k=>document.getElementById(k);
+  if(id){
+    const c=customers.find(x=>x.id===id);
+    g('c_type').value=c.via||'general'; g('c_entity').value=c.entity||'person';
+    g('c_custCode').value=c.custCode||''; g('c_name').value=c.name; g('c_idnum').value=c.idnum||'';
+    g('c_phone1').value=c.phone1||''; g('c_phone2').value=c.phone2||''; g('c_address').value=c.address||'';
+    g('c_contact').value=c.contact||'';
+    toggleCustFields(); // เติม dropdown สังกัดก่อน
+    g('c_code').value=c.agentCode||''; g('c_source').value=c.source||''; g('c_sellerMain').value=c.seller||'';
+    syncSellerFromCode();
+  } else {
+    ['c_custCode','c_name','c_idnum','c_phone1','c_phone2','c_address','c_contact'].forEach(k=>g(k).value='');
+    g('c_type').value='general'; g('c_entity').value='person'; g('c_source').value='';
+    g('c_sellerMain').value='';
+    toggleCustFields();
+  }
+  updateNameLabel();
+  document.getElementById('custOverlay').classList.add('open');
+}
+function closeCustModal(){ document.getElementById('custOverlay').classList.remove('open'); }
+function saveCust(){
+  const g=k=>document.getElementById(k).value.trim();
+  const via=document.getElementById('c_type').value;  // general | agent | vip = ช่องทางส่งงาน
+  const entity=document.getElementById('c_entity').value;
+  const viaAgent=(via==='agent'||via==='vip');
+  if(!g('c_name')){ alert('กรุณากรอกชื่อเจ้าของรถ'); return; }
+  if(viaAgent&&!g('c_code')){ alert('กรุณาเลือก'+(via==='agent'?'ตัวแทน':' VIP')+'ที่สังกัด'); return; }
+  // เบอร์/ที่อยู่: บังคับเฉพาะลูกค้าทั่วไป (ส่งเอง)
+  if(!viaAgent){
+    if(!g('c_phone1')){ alert('กรุณากรอกเบอร์ติดต่อ 1'); return; }
+    if(!g('c_address')){ alert('กรุณากรอกที่อยู่'); return; }
+    if(!g('c_source')){ alert('กรุณาเลือกแหล่งที่มา'); return; }
+  }
+  // เซลล์: ตัวแทนจาก prefix, VIP จากทะเบียน, ทั่วไปเลือกเอง
+  let seller;
+  if(via==='agent') seller=sellerFromCode(g('c_code'))||document.getElementById('c_sellerMain').value;
+  else if(via==='vip'){ const v=customers.find(c=>c.custCode===g('c_code')&&c.type==='vip'); seller=(v&&v.seller)||document.getElementById('c_sellerMain').value; }
+  else seller=document.getElementById('c_sellerMain').value;
+  if(!seller){ alert('กรุณาเลือกเซลล์ผู้ดูแล'); return; }
+  // แหล่งที่มาอัตโนมัติ
+  const source=via==='agent'?'ตัวแทน':(via==='vip'?'ลูกค้า VIP':g('c_source'));
+  // เตือนรูปแบบเบอร์/เลขบัตร
+  const phoneDigits=g('c_phone1').replace(/\D/g,'');
+  const idDigits=g('c_idnum').replace(/\D/g,'');
+  let warnMsg='';
+  if(phoneDigits&&phoneDigits.length!==10) warnMsg+=`• เบอร์ติดต่อ 1 มี ${phoneDigits.length} หลัก (ปกติ 10 หลัก)\n`;
+  if(idDigits&&idDigits.length!==13) warnMsg+=`• ${entity==='company'?'เลขนิติบุคคล':'เลขบัตรประชาชน'} มี ${idDigits.length} หลัก (ปกติ 13 หลัก)\n`;
+  if(warnMsg&&!confirm('ข้อมูลอาจไม่ครบถ้วน:\n'+warnMsg+'\nต้องการบันทึกต่อหรือไม่?')) return;
+  // ตรวจซ้ำเจ้าของรถ (เฉพาะกลุ่มเจ้าของรถ ไม่รวมทะเบียนตัวแทน/VIP)
+  const others=owners().filter(x=>x.id!==editingCust);
+  const idMatch=idDigits?others.find(x=>(x.idnum||'').replace(/\D/g,'')===idDigits):null;
+  const phoneMatch=phoneDigits?others.find(x=>(x.phone1||'').replace(/\D/g,'')===phoneDigits):null;
+  const nameMatch=others.find(x=>x.name===g('c_name'));
+  if(idMatch){
+    if(!confirm(`⚠️ เลขบัตร/นิติบุคคลนี้ซ้ำกับ:\n${idMatch.custCode||''} ${idMatch.name}\n\nน่าจะเป็นคนเดียวกัน — แนะนำใช้ระเบียนเดิม\nยังต้องการเพิ่มเป็นรายใหม่หรือไม่?`)) return;
+  } else if(phoneMatch){
+    if(!confirm(`⚠️ เบอร์นี้ซ้ำกับ:\n${phoneMatch.custCode||''} ${phoneMatch.name}\n\nอาจเป็นคนเดียวกัน — ยังต้องการเพิ่มรายใหม่หรือไม่?`)) return;
+  } else if(nameMatch){
+    if(!confirm(`ชื่อนี้ซ้ำกับ: ${nameMatch.custCode||''} ${nameMatch.name}\nแต่เบอร์/เลขบัตรต่างกัน — อาจคนละคน\nเพิ่มเป็นรายใหม่หรือไม่?`)) return;
+  }
+  const data={ kind:'owner', via, entity, name:g('c_name'), idnum:g('c_idnum'),
+    phone1:g('c_phone1'), phone2:g('c_phone2'), address:g('c_address'), source, contact:g('c_contact'), seller,
+    agentCode: viaAgent?g('c_code'):'' };  // สังกัดตัวแทน/VIP (เว้นว่าง=ทั่วไป)
+  if(editingCust){
+    const ex=customers.find(x=>x.id===editingCust);
+    data.custCode=ex.custCode; Object.assign(ex,data);
+  } else {
+    data.custCode=genCustCode('general');  // เจ้าของรถได้รหัส KHC-xxxx ของตัวเองเสมอ
+    data.id=Date.now(); customers.push(data);
+  }
+  renderCustomers(); closeCustModal();
+}
+function delCust(id){
+  const c=customers.find(x=>x.id===id);
+  if(sales.some(s=>s.customerId===id)){ alert('ลบไม่ได้ — มีรายการขายของลูกค้ารายนี้อยู่'); return; }
+  // กันลบพลาด: ตัวแทน/VIP ที่มีเงื่อนไข เตือนหนักขึ้น
+  if(c&&c.type!=='general'&&((c.exceptions||[]).length||Object.keys(c.typeDisc||{}).length)){
+    if(!confirm(`⚠️ "${c.custCode||''} ${c.name}" เป็น${TYPE_LABEL[c.type]}ที่ตั้งเงื่อนไขส่วนลดไว้\nการลบจะเสียเงื่อนไขทั้งหมด (ส่วนลดตามประเภท + ข้อยกเว้น)\n\nยืนยันลบจริงหรือไม่?`)) return;
+  } else {
+    if(!confirm('ยืนยันลบ '+(c?c.name:'')+'?'))return;
+  }
+  customers=customers.filter(x=>x.id!==id); renderCustomers(); if(typeof renderRegistry==='function')renderRegistry();
+}
+
+function fillCustomerSelect(){
+  document.getElementById('s_customer').innerHTML='<option value="">— เลือกเจ้าของรถ —</option>'+
+    owners().map(c=>{
+      const via=c.agentCode?' ผ่าน '+c.agentCode:' (ทั่วไป)';
+      return `<option value="${c.id}">${c.custCode?'['+c.custCode+'] ':''}${c.name}${via}</option>`;
+    }).join('');
+}
+function fillInsurerSelect(){
+  document.getElementById('s_insurer').innerHTML='<option value="">— เลือกบริษัท —</option>'+
+    INSURERS.map(i=>`<option value="${i.name}">${i.name} · ${i.tier}</option>`).join('');
+}
+function fillSellerSelect(){
+  document.getElementById('s_seller').innerHTML='<option value="">— เลือกผู้ขาย —</option>'+
+    SELLERS.map(s=>`<option value="${s}">${s}</option>`).join('');
+}
+function fillVehSelect(){
+  document.getElementById('s_vehCode').innerHTML='<option value="">— เลือกรหัสรถ —</option>'+
+    VEHCODES.map(v=>`<option value="${v.code}">${v.label}</option>`).join('');
+}
+function onPickCustomer(){
+  const owner=customers.find(x=>x.id===+document.getElementById('s_customer').value);
+  if(owner){
+    if(owner.seller&&!document.getElementById('s_seller').value) document.getElementById('s_seller').value=owner.seller;
+    const reg=registryOf(owner);
+    if(reg&&reg.payterm) document.getElementById('s_payterm').value=reg.payterm;
+  }
+  pullDiscount();
+}
+function toggleGarage(){
+  document.getElementById('garageField').style.display=document.getElementById('s_instype').value==='ป.1'?'block':'none';
+}
+function pullDiscount(){
+  toggleGarage();
+  const owner=customers.find(x=>x.id===+document.getElementById('s_customer').value);
+  const reg=registryOf(owner);  // ตัวแทน/VIP ที่สังกัด = แหล่งเงื่อนไขส่วนลด
+  const instype=document.getElementById('s_instype').value;
+  const insurer=document.getElementById('s_insurer').value;
+  const vehCode=document.getElementById('s_vehCode').value;
+  const cap=capDiscountPct(reg,instype,insurer,vehCode);
+  const premium=+document.getElementById('s_premium').value||0;
+  const dEl=document.getElementById('s_discount');
+  if(cap!=null && premium>0 && (!dEl.value||+dEl.value===0)){
+    dEl.value=Math.round(premium*cap/100);
+  }
+  recalcSale();
+}
+function recalcSale(){
+  const owner=customers.find(x=>x.id===+document.getElementById('s_customer').value);
+  const reg=registryOf(owner);
+  const instype=document.getElementById('s_instype').value;
+  const insurer=document.getElementById('s_insurer').value;
+  const vehCode=document.getElementById('s_vehCode').value;
+  const premium=+document.getElementById('s_premium').value||0;
+  const discount=+document.getElementById('s_discount').value||0;
+  const info=capDiscountInfo(reg,instype,insurer,vehCode);
+  const cap=info.pct;
+  const dpct=premium>0?(discount/premium*100):0;
+  const levelLabel={veh:'เฉพาะรหัสรถ',company:'บริษัท×ประเภท',type:'ตามประเภท'}[info.level]||'';
+
+  document.getElementById('o_cap').textContent = cap!=null ? cap+'% ('+levelLabel+')' : 'ตามแคมเปญ/ไม่กำหนด';
+  document.getElementById('o_discpct').textContent = premium>0 ? dpct.toFixed(2)+'%' : '—';
+  const t3=tax3Of(discount);
+  document.getElementById('o_tax3').textContent = t3>0?'฿'+fmt(t3):'ไม่หัก (ลด ≤ 1,000)';
+  document.getElementById('o_discafter').textContent = discount>0?'฿'+fmt(discount-t3):'—';
+  document.getElementById('o_count').textContent = insurer?(isCounted(insurer)?'นับยอด ('+insurerTier(insurer)+')':'ไม่นับยอด (นอกรายชื่อ)'):'—';
+
+  const warn=document.getElementById('discWarn'), ok=document.getElementById('discOk');
+  warn.classList.remove('show'); ok.classList.remove('show');
+
+  // เตือนบริษัทนอกรายการที่ตัวแทนขายได้
+  if(reg&&insurer&&!canSellInsurer(reg,insurer)){
+    warn.classList.add('show');
+    warn.innerHTML=`⚠️ บริษัท "${insurer}" ไม่อยู่ในรายการที่ตกลงกับ ${reg.custCode||reg.name} — ระบบไม่ขึ้นส่วนลดอัตโนมัติ กรุณาระบุส่วนลดเอง/รอผู้อนุมัติ`;
+    return;
+  }
+  if(cap!=null && premium>0 && discount>0){
+    if(dpct>cap+0.001){
+      const overBaht=discount-(premium*cap/100);
+      warn.classList.add('show');
+      warn.innerHTML=`⚠️ ส่วนลดเกินเพดาน — เพดาน ${cap}% แต่กรอก ${dpct.toFixed(2)}% (เกิน ฿${fmt(overBaht)}) ต้องผู้จัดการอนุมัติ และส่วนต่างจะถูกหักจากคอมเซลล์`;
+    } else {
+      ok.classList.add('show');
+      ok.textContent=`✓ ส่วนลดอยู่ในเพดาน (${dpct.toFixed(2)}% ≤ ${cap}%)`;
+    }
+  }
+}
+function openSaleModal(id){
+  editingSale=id||null;
+  document.getElementById('saleModalTitle').textContent=id?'แก้ไขการขาย':'บันทึกการขายใหม่';
+  fillCustomerSelect(); fillInsurerSelect(); fillSellerSelect(); fillVehSelect();
+  const g=k=>document.getElementById(k);
+  if(id){
+    const s=sales.find(x=>x.id===id);
+    g('s_customer').value=s.customerId; g('s_insured').value=s.insured||''; g('s_date').value=s.date||'';
+    g('s_seller').value=s.seller||''; g('s_plate').value=s.plate||''; g('s_instype').value=s.instype;
+    g('s_vehCode').value=s.vehCode||'';
+    g('s_garage').value=s.garage||'ห้าง'; g('s_insurer').value=s.insurer; g('s_policy').value=s.policy||'';
+    g('s_premium').value=s.premium; g('s_discount').value=s.discount||''; g('s_shipping').value=s.shipping||'';
+    g('s_tax1').value=s.tax1||''; g('s_payterm').value=s.payterm||'cash';
+    toggleGarage(); recalcSale();
+  } else {
+    ['s_insured','s_seller','s_plate','s_policy','s_premium','s_discount','s_shipping','s_tax1'].forEach(k=>g(k).value='');
+    g('s_customer').value=''; g('s_date').value=todayISO(); g('s_instype').value='ป.1'; g('s_vehCode').value='';
+    g('s_garage').value='ห้าง'; g('s_insurer').value=''; g('s_payterm').value='cash';
+    toggleGarage(); recalcSale();
+  }
+  document.getElementById('saleOverlay').classList.add('open');
+}
+function closeSaleModal(){ document.getElementById('saleOverlay').classList.remove('open'); }
+function saveSale(){
+  const g=k=>document.getElementById(k).value.trim();
+  if(!g('s_customer')){ alert('กรุณาเลือกลูกค้า'); return; }
+  if(!g('s_seller')||!g('s_premium')){ alert('กรุณากรอกผู้ขายและเบี้ยสุทธิ'); return; }
+  if(!g('s_insurer')){ alert('กรุณาเลือกบริษัทประกัน'); return; }
+  const owner=customers.find(x=>x.id===+g('s_customer'));
+  const reg=registryOf(owner);
+  const instype=document.getElementById('s_instype').value;
+  const insurer=g('s_insurer');
+  const vehCode=document.getElementById('s_vehCode').value;
+  // วิธี A: เก็บเพดานส่วนลด ณ ตอนขาย ไว้กับรายการ ไม่เปลี่ยนตามการแก้ทะเบียนทีหลัง
+  const savedCapPct=capDiscountPct(reg,instype,insurer,vehCode);
+  const data={
+    customerId:+g('s_customer'),insured:g('s_insured'),date:g('s_date'),seller:g('s_seller'),plate:g('s_plate'),
+    vehCode, instype, garage:document.getElementById('s_garage').value,
+    insurer,policy:g('s_policy'),premium:+g('s_premium'),discount:+g('s_discount')||0,
+    shipping:+g('s_shipping')||0,tax1:+g('s_tax1')||0,payterm:document.getElementById('s_payterm').value,
+    savedCapPct: savedCapPct, agentCode: owner?owner.agentCode||'':'',
+  };
+  if(editingSale){ Object.assign(sales.find(x=>x.id===editingSale),data); }
+  else { data.id=Date.now(); sales.push(data); }
+  renderSales(); closeSaleModal();
+}
+function delSale(id){ if(!confirm('ยืนยันลบรายการขายนี้?'))return; sales=sales.filter(x=>x.id!==id); renderSales(); }
+
+/* ====== หน้ารับชำระ ====== */
+// cache รายการขายจาก Sheet
+let _apiSalesCache = null;
+let _apiSalesLoading = false;
+
+async function loadApiSalesCache() {
+  if(_apiSalesCache) return _apiSalesCache;
+  if(_apiSalesLoading) {
+    await new Promise(r => setTimeout(r, 500));
+    return _apiSalesCache;
+  }
+  _apiSalesLoading = true;
+  try {
+    const data = await apiCall({action:'getAllSales'});
+    if(data && data.results) {
+      _apiSalesCache = data.results;
+      console.log('โหลด sales cache:', data.count, 'รายการ');
+    }
+  } catch(e) {
+    console.error('โหลด cache ล้มเหลว:', e);
+  }
+  _apiSalesLoading = false;
+  return _apiSalesCache;
+}
+
+let _searchTimer = null;
+async function searchPaySales(){
+  const q=(document.getElementById('paySearch').value||'').trim();
+  const box=document.getElementById('payResults');
+  if(!q||q.length<2){ box.innerHTML=''; return; }
+
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(async () => {
+    box.innerHTML='<div class="cust-sub" style="padding:12px">⏳ กำลังค้นหา...</div>';
+
+    // ถ้ามี cache แล้ว ค้นใน memory ได้เลย (เร็วมาก)
+    if(_apiSalesCache) {
+      const qL = q.toLowerCase();
+      const found = _apiSalesCache.filter(s =>
+        [s.txId, s.name, s.plate, s.policyNo, s.agentCode].join(' ').toLowerCase().includes(qL)
+      ).slice(0, 10);
+      renderPayResults(found);
+      return;
+    }
+
+    // ยังไม่มี cache — เรียก searchSales API โดยตรง (JSONP)
+    try {
+      const data = await apiCall({action:'searchSales', q});
+      if(data && Array.isArray(data.results)) {
+        renderPayResults(data.results);
+        return;
+      }
+    } catch(err) {
+      box.innerHTML=`<div class="empty" style="padding:16px;color:var(--accent)">⏱ หมดเวลา — ลองพิมพ์ใหม่อีกครั้ง</div>`;
+      return;
+    }
+    renderPayResults([]);
+  }, 400);
+}
+
+function renderPayResults(list){
+  const box=document.getElementById('payResults');
+  if(!list.length){
+    box.innerHTML=`<div class="empty" style="padding:16px">ไม่พบรายการ — ลองพิมพ์ชื่อ ทะเบียน หรือเลขธุรกรรม</div>`; return;
+  }
+  box.innerHTML=list.map(s=>{
+    const bal=+(s.balance||0);
+    const st=s.payStatus||'';
+    const stColor=st==='ชำระครบ'?'var(--green)':st==='ค้างบางส่วน'?'var(--amber)':'var(--ink-soft)';
+    return `<div class="pay-result-item${String(selectedPaySaleId)===String(s.txId)?' selected':''}" onclick="selectPaySale('${s.txId}',this)">
+      <div>
+        <div class="pay-result-main">🔖 ${s.txId} &nbsp;·&nbsp; ${s.name} &nbsp;·&nbsp; ${s.instype||''} ${s.insurer||''}</div>
+        <div class="pay-result-sub">ทะเบียน: ${s.plate||'—'} &nbsp;·&nbsp; กรมธรรม์: ${s.policyNo||'—'} &nbsp;·&nbsp; ผู้ขาย: ${s.seller||'—'}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700;font-size:.9rem">฿${fmt(+(s.grandTotal||0))}</div>
+        <div style="font-size:.78rem;color:${stColor};font-weight:600">${st}${st!=='ชำระครบ'?` (ค้าง ฿${fmt(bal)})`:''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function selectPaySale(id, el){
+  selectedPaySaleId=id;
+  document.querySelectorAll('.pay-result-item').forEach(x=>x.classList.remove('selected'));
+  if(el) el.classList.add('selected');
+  // ลอง API
+  const apiResult = await apiCall({action:'getSale', txId:id});
+  if(apiResult && apiResult.found) { renderPayConfirmFromAPI(apiResult); return; }
+  // fallback local
+  renderPayConfirm(id);
+}
+
+function renderPayConfirmFromAPI(s){
+  document.getElementById('payConfirmBox').style.display='block';
+  document.getElementById('payFormBox').style.display='block';
+  document.getElementById('payHistWrap').style.display='block';
+  const PAYTERM_TH={cash:'เงินสด',exchange:'กรมแลกเงิน',bill:'วางบิล',install:'ผ่อน',
+    เงินสด:'เงินสด',วางบิล:'วางบิล',ผ่อน:'ผ่อน',กรมแลกเงิน:'กรมแลกเงิน'};
+  const cond=PAYTERM_TH[s.payCondition]||s.payCondition||'—';
+  const bal=+(s.balance||0); const paid=+(s.totalPaid||0); const grand=+(s.grandTotal||0);
+  document.getElementById('payInfoGrid').innerHTML=`
+    <div class="pay-info-item"><div class="lbl">เลขธุรกรรม</div><div class="val">${s.txId}</div></div>
+    <div class="pay-info-item"><div class="lbl">ลูกค้า / ผู้เอาประกัน</div><div class="val">${s.name}</div></div>
+    <div class="pay-info-item"><div class="lbl">ทะเบียนรถ</div><div class="val">${s.plate||'—'}</div></div>
+    <div class="pay-info-item"><div class="lbl">ประเภท / บริษัท</div><div class="val">${s.instype} — ${s.insurer}</div></div>
+    <div class="pay-info-item"><div class="lbl">กรมธรรม์</div><div class="val">${s.policyNo||'—'}</div></div>
+    <div class="pay-info-item"><div class="lbl">เงื่อนไข</div><div class="val">${cond}${s.agentCode?' ('+s.agentCode+')':''}</div></div>
+    <div class="pay-info-item"><div class="lbl">ยอดรวมสุทธิ</div><div class="val big">฿${fmt(grand)}</div></div>
+    <div class="pay-info-item"><div class="lbl">รับชำระแล้ว</div><div class="val" style="color:var(--green)">฿${fmt(paid)}</div></div>
+    <div class="pay-info-item"><div class="lbl">ยอดค้างชำระ</div><div class="val ${bal>0.01?'warn':''}">฿${fmt(bal)} ${bal<=0.01?'✓':''}</div></div>
+  `;
+  // ตารางงวดผ่อน
+  const instSec=document.getElementById('payInstallmentSection');
+  const pays=(s.payments||[]).sort((a,b)=>(a.installNo||0)-(b.installNo||0));
+  if((s.payCondition==='ผ่อน'||s.payCondition==='install')&&pays.length>0){
+    const maxInst=Math.max(+(s.installments||0), pays.length+(bal>0.01?1:0));
+    let html=`<div class="pay-installment-list"><h4>สถานะงวดชำระ</h4>
+      <div class="pay-inst-row hdr"><span>งวด</span><span>วันที่ชำระ</span><span>ยอด</span><span>สถานะ</span></div>`;
+    for(let i=1;i<=maxInst;i++){
+      const p=pays.find(x=>+x.installNo===i);
+      if(p) html+=`<div class="pay-inst-row paid"><span>${i}</span><span>${p.date}</span><span>฿${fmt(p.amount)}</span><span>✓ ชำระแล้ว</span></div>`;
+      else if(bal>0.01&&i===pays.filter(x=>x.installNo).length+1){
+        html+=`<div class="pay-inst-row current"><span>${i}</span><span>← รอบันทึก</span><span></span><span>⏳ รอชำระ</span></div>`;
+        document.getElementById('p_installNo').value=i;
+      } else {
+        html+=`<div class="pay-inst-row pending"><span>${i}</span><span>—</span><span></span><span>รอชำระ</span></div>`;
+      }
+    }
+    html+='</div>'; instSec.innerHTML=html;
+  } else { instSec.innerHTML=''; }
+
+  document.getElementById('p_date').value=todayISO();
+  if(!document.getElementById('p_amount').value && bal>0.01)
+    document.getElementById('p_amount').value=bal.toFixed(2);
+  recalcPayFromAPI(grand, paid, bal);
+  renderPayHistoryFromAPI(s.payments||[], grand, paid, bal);
+}
+
+function recalcPayFromAPI(grand, paid, bal){
+  const amount=+document.getElementById('p_amount').value||0;
+  const after=bal-amount;
+  let html='';
+  if(amount>0){
+    html=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div class="pay-info-item"><div class="lbl">รับครั้งนี้</div><div class="val big">฿${fmt(amount)}</div></div>
+      <div class="pay-info-item"><div class="lbl">ยอดค้างก่อน</div><div class="val">฿${fmt(Math.max(0,bal))}</div></div>
+      <div class="pay-info-item"><div class="lbl">คงเหลือหลังชำระ</div><div class="val ${after<=0.01?'':'warn'}">฿${fmt(Math.max(0,after))} ${after<=0.01?'✓ ครบ':''}</div></div>
+    </div>`;
+    if(amount>bal+0.01) html+=`<div class="warn-flag" style="margin-top:8px">⚠️ ยอดที่รับมากกว่ายอดค้าง</div>`;
+  }
+  document.getElementById('payAmountDisplay').innerHTML=html;
+  document.getElementById('payCalcBox').style.display=amount>0?'block':'none';
+}
+
+function renderPayHistoryFromAPI(pays, grand, totalPaid, bal){
+  const body=document.getElementById('payHistBody');
+  if(!pays.length){
+    body.innerHTML=`<div class="cust-sub" style="padding:10px">ยังไม่มีประวัติรับชำระ</div>`;
+    document.getElementById('payBalanceRow').innerHTML=''; return;
+  }
+  body.innerHTML=pays.map(p=>`
+    <div class="pay-hist-row">
+      <span>${p.installNo||'—'}</span><span>${p.date}</span>
+      <span>${p.method||'—'}</span><span style="font-weight:700">฿${fmt(+p.amount||0)}</span>
+      <span style="font-size:.78rem">${p.receiptNo||'—'}</span>
+      <button class="icon-btn" style="background:var(--red-soft);color:var(--red)" onclick="delPaymentAPI('${p.payId}')">ลบ</button>
+    </div>`).join('');
+  const balRow=document.getElementById('payBalanceRow');
+  balRow.innerHTML=bal<=0.01
+    ? `<span style="color:var(--green)">✓ ชำระครบแล้ว — ยอดรวม ฿${fmt(grand)}</span>`
+    : `<span style="color:var(--amber)">ยอดค้าง: <strong>฿${fmt(Math.max(0,bal))}</strong> จาก ฿${fmt(grand)}</span>`;
+}
+
+async function savePaymentToAPI(){
+  const txId=selectedPaySaleId;
+  if(!txId){ alert('กรุณาเลือกรายการขายก่อน'); return; }
+  const amount=+document.getElementById('p_amount').value;
+  if(!amount||amount<=0){ alert('กรุณากรอกยอดที่รับจริง'); return; }
+  const date=document.getElementById('p_date').value;
+  if(!date){ alert('กรุณาระบุวันที่รับชำระ'); return; }
+
+  const params={
+    action:'savePayment', txId:String(txId), date, amount,
+    method:document.getElementById('p_method').value,
+    payType:document.getElementById('p_method').value==='ค่างวด'?'ค่างวด':'เต็มจำนวน',
+    installNo:document.getElementById('p_installNo').value||'',
+    receiptNo:document.getElementById('p_receiptNo').value.trim(),
+    remark:document.getElementById('p_remark').value.trim(),
+  };
+
+  const btn=document.querySelector('#payFormBox .btn:last-child');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังบันทึก...'; }
+
+  const result=await apiCall(params);
+  if(btn){ btn.disabled=false; btn.textContent='บันทึกรับชำระ'; }
+
+  if(result&&result.success){
+    // clear form
+    ['p_amount','p_installNo','p_receiptNo','p_remark'].forEach(k=>{const el=document.getElementById(k);if(el)el.value='';});
+    // reload ข้อมูล
+    const detail=await apiCall({action:'getSale',txId:String(txId)});
+    if(detail&&detail.found) renderPayConfirmFromAPI(detail);
+    // อัปเดต search results
+    searchPaySales();
+  } else {
+    alert('บันทึกไม่สำเร็จ: '+(result?result.error:'ไม่มีการตอบกลับ'));
+  }
+}
+
+async function delPaymentAPI(payId){
+  if(!confirm('ยืนยันลบรายการชำระนี้?')) return;
+  const result=await apiCall({action:'deletePayment',payId});
+  if(result&&result.success){
+    const detail=await apiCall({action:'getSale',txId:String(selectedPaySaleId)});
+    if(detail&&detail.found) renderPayConfirmFromAPI(detail);
+    searchPaySales();
+  } else alert('ลบไม่สำเร็จ');
+}
+
+function renderPayConfirm(id){
+  const s=sales.find(x=>x.id===id);
+  if(!s) return;
+  const owner=customers.find(x=>x.id===s.customerId);
+  const reg=registryOf(owner);
+  const grand=saleGrandTotal(s);
+  const paid=totalPaid(id);
+  const bal=payBalance(s);
+  const st=payStatus(s);
+
+  // กล่องยืนยัน
+  document.getElementById('payConfirmBox').style.display='block';
+  document.getElementById('payFormBox').style.display='block';
+  document.getElementById('payHistWrap').style.display='block';
+
+  // info grid
+  const PAYTERM_TH={cash:'เงินสด',exchange:'กรมแลกเงิน',bill:'วางบิล',install:'ผ่อน'};
+  document.getElementById('payInfoGrid').innerHTML=`
+    <div class="pay-info-item"><div class="lbl">เลขธุรกรรม</div><div class="val">${s.id}</div></div>
+    <div class="pay-info-item"><div class="lbl">ลูกค้า / ผู้เอาประกัน</div><div class="val">${owner?owner.name:s.insured}</div></div>
+    <div class="pay-info-item"><div class="lbl">ทะเบียนรถ</div><div class="val">${s.plate||'—'}</div></div>
+    <div class="pay-info-item"><div class="lbl">ประเภท / บริษัท</div><div class="val">${s.instype} — ${s.insurer}</div></div>
+    <div class="pay-info-item"><div class="lbl">กรมธรรม์</div><div class="val">${s.policy||'—'}</div></div>
+    <div class="pay-info-item"><div class="lbl">เงื่อนไข</div><div class="val">${PAYTERM_TH[s.payterm]||s.payterm||'—'}${reg?' ('+reg.custCode+')':''}</div></div>
+    <div class="pay-info-item"><div class="lbl">ยอดรวมสุทธิ</div><div class="val big">฿${fmt(grand)}</div></div>
+    <div class="pay-info-item"><div class="lbl">รับชำระแล้ว</div><div class="val" style="color:var(--green)">฿${fmt(paid)}</div></div>
+    <div class="pay-info-item"><div class="lbl">ยอดค้างชำระ</div><div class="val ${bal>0.01?'warn':''}">฿${fmt(Math.max(0,bal))} ${st==='ชำระครบ'?'✓':''}</div></div>
+  `;
+
+  // แสดงตารางงวดถ้าผ่อน
+  const instSec=document.getElementById('payInstallmentSection');
+  const prevPays=paymentsOf(id).sort((a,b)=>a.installNo-b.installNo);
+  if(s.payterm==='install'&&s.premium){
+    // คำนวณงวดอ้างอิง (ถ้ามีในรายการขาย)
+    const totalInst=s.installments||0;
+    let instHtml=`<div class="pay-installment-list"><h4>สถานะงวดชำระ</h4>
+      <div class="pay-inst-row hdr"><span>งวด</span><span>วันที่ชำระจริง</span><span>ยอดที่ชำระ</span><span>สถานะ</span></div>`;
+    const maxInst=Math.max(totalInst, prevPays.length+(bal>0.01?1:0));
+    for(let i=1;i<=maxInst;i++){
+      const p=prevPays.find(x=>x.installNo===i);
+      if(p){
+        instHtml+=`<div class="pay-inst-row paid"><span>${i}</span><span>${p.date}</span><span>฿${fmt(p.amount)}</span><span>✓ ชำระแล้ว</span></div>`;
+      } else if(bal>0.01&&i===prevPays.length+1){
+        instHtml+=`<div class="pay-inst-row current"><span>${i}</span><span>← คีย์ด้านล่าง</span><span></span><span>⏳ รอชำระ</span></div>`;
+        document.getElementById('p_installNo').value=i;
+      } else {
+        instHtml+=`<div class="pay-inst-row pending"><span>${i}</span><span>—</span><span></span><span>รอชำระ</span></div>`;
+      }
+    }
+    instHtml+='</div>';
+    instSec.innerHTML=instHtml;
+  } else {
+    instSec.innerHTML='';
+    document.getElementById('p_installNo').value='';
+  }
+
+  // set วันที่ default
+  document.getElementById('p_date').value=todayISO();
+  // auto-fill ยอด: ถ้ายังไม่เคยชำระ = ยอดรวม, ถ้าผ่อน = อัตโนมัติตาม balance
+  if(!document.getElementById('p_amount').value){
+    if(s.payterm==='install'&&bal>0.01&&bal<grand){
+      document.getElementById('p_amount').value='';
+    } else if(bal>0.01){
+      document.getElementById('p_amount').value=Math.max(0,bal).toFixed(2);
+    }
+  }
+  recalcPay();
+  renderPayHistory(id);
+}
+
+function recalcPay(){
+  const id=selectedPaySaleId;
+  const s=id?sales.find(x=>x.id===id):null;
+  if(!s){ document.getElementById('payCalcBox').style.display='none'; return; }
+  const amount=+document.getElementById('p_amount').value||0;
+  const bal=payBalance(s);
+  const after=bal-amount;
+  let html='';
+  if(amount>0){
+    html=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div class="pay-info-item"><div class="lbl">รับชำระครั้งนี้</div><div class="val big">฿${fmt(amount)}</div></div>
+      <div class="pay-info-item"><div class="lbl">ยอดค้างก่อนชำระ</div><div class="val">฿${fmt(Math.max(0,bal))}</div></div>
+      <div class="pay-info-item"><div class="lbl">คงเหลือหลังชำระ</div><div class="val ${after<=0.01?'':' warn'}">฿${fmt(Math.max(0,after))} ${after<=0.01?'✓ ครบ':''}</div></div>
+    </div>`;
+    if(amount>bal+0.01){
+      html+=`<div class="warn-flag" style="margin-top:8px">⚠️ ยอดที่รับ (฿${fmt(amount)}) มากกว่ายอดค้าง (฿${fmt(Math.max(0,bal))}) — กรุณาตรวจสอบ</div>`;
+    }
+  }
+  document.getElementById('payAmountDisplay').innerHTML=html;
+  document.getElementById('payCalcBox').style.display=amount>0?'block':'none';
+}
+
+function savePayment(){
+  if(!selectedPaySaleId){ alert('กรุณาเลือกรายการขายก่อน'); return; }
+  const amount=+document.getElementById('p_amount').value;
+  if(!amount||amount<=0){ alert('กรุณากรอกยอดที่รับจริง'); return; }
+  const date=document.getElementById('p_date').value;
+  if(!date){ alert('กรุณาระบุวันที่รับชำระ'); return; }
+  const s=sales.find(x=>x.id===selectedPaySaleId);
+  const bal=payBalance(s);
+  if(amount>bal+0.01){
+    if(!confirm(`ยอดที่รับ (฿${fmt(amount)}) มากกว่ายอดค้าง (฿${fmt(Math.max(0,bal))})\nยืนยันบันทึกหรือไม่?`)) return;
+  }
+  const p={
+    id: Date.now(),
+    saleId: selectedPaySaleId,
+    date,
+    amount,
+    method: document.getElementById('p_method').value,
+    installNo: +document.getElementById('p_installNo').value||null,
+    receiptNo: document.getElementById('p_receiptNo').value.trim(),
+    remark: document.getElementById('p_remark').value.trim(),
+  };
+  payments.push(p);
+  // reset ช่องกรอก
+  document.getElementById('p_amount').value='';
+  document.getElementById('p_receiptNo').value='';
+  document.getElementById('p_remark').value='';
+  // re-render ยืนยัน + ประวัติ
+  renderPayConfirm(selectedPaySaleId);
+  searchPaySales(); // อัปเดตยอดค้างในผลค้นหา
+}
+
+function renderPayHistory(saleId){
+  const list=paymentsOf(saleId).sort((a,b)=>a.date.localeCompare(b.date));
+  const body=document.getElementById('payHistBody');
+  if(!list.length){
+    body.innerHTML=`<div class="cust-sub" style="padding:10px">ยังไม่มีประวัติรับชำระ</div>`;
+    document.getElementById('payBalanceRow').innerHTML='';
+    return;
+  }
+  body.innerHTML=list.map(p=>`
+    <div class="pay-hist-row">
+      <span>${p.installNo||'—'}</span>
+      <span>${p.date}</span>
+      <span>${p.method}</span>
+      <span style="font-weight:700">฿${fmt(p.amount)}</span>
+      <span style="font-size:.78rem">${p.receiptNo||'—'}</span>
+      <button class="icon-btn" style="background:var(--red-soft);color:var(--red)" onclick="delPayment(${p.id})">ลบ</button>
+    </div>`).join('');
+  const s=sales.find(x=>x.id===saleId);
+  const bal=payBalance(s);
+  const balRow=document.getElementById('payBalanceRow');
+  balRow.innerHTML=bal<=0.01
+    ? `<span style="color:var(--green);font-size:.95rem">✓ ชำระครบแล้ว — ยอดรวม ฿${fmt(saleGrandTotal(s))}</span>`
+    : `<span style="color:var(--amber)">ยอดค้างชำระ: <strong>฿${fmt(Math.max(0,bal))}</strong> จากทั้งหมด ฿${fmt(saleGrandTotal(s))}</span>`;
+}
+
+function delPayment(id){
+  if(!confirm('ยืนยันลบรายการชำระนี้?')) return;
+  payments=payments.filter(p=>p.id!==id);
+  renderPayConfirm(selectedPaySaleId);
+  searchPaySales();
+}
+
+function resetPayForm(){
+  selectedPaySaleId=null;
+  document.getElementById('paySearch').value='';
+  document.getElementById('payResults').innerHTML='';
+  document.getElementById('payConfirmBox').style.display='none';
+  document.getElementById('payFormBox').style.display='none';
+  document.getElementById('payHistWrap').style.display='none';
+  ['p_amount','p_installNo','p_receiptNo','p_remark'].forEach(k=>{ const el=document.getElementById(k); if(el)el.value=''; });
+}
+
+/* ====== Registry (ทะเบียนตัวแทน/VIP) ====== */
+const REG_PASSWORD='khc2569';  // รหัสผ่านกันเบื้องต้น — เปลี่ยนได้ และจะล็อกจริงตอนต่อ Sheet
+let regUnlocked=false, editingReg=null, rexcRows=[];
+
+function renderRegistry(){
+  const q=(document.getElementById('regSearch').value||'').toLowerCase().trim();
+  const ft=document.getElementById('regFilterType').value;
+  const list=customers.filter(c=>(c.type==='agent'||c.type==='vip')&&(!ft||c.type===ft)
+    &&(!q||[c.name,c.custCode].join(' ').toLowerCase().includes(q)));
+  const body=document.getElementById('regBody');
+  if(!list.length){body.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="big">ยังไม่มีตัวแทน/VIP</div>กดเปิดโค้ดเพื่อเริ่ม</div></td></tr>`;return;}
+  body.innerHTML=list.map(c=>{
+    const td=c.typeDisc||{};
+    const tdText=Object.keys(td).length?Object.entries(td).map(([k,v])=>`${k} ${v}%`).join(' · '):'—';
+    const insText=(c.insurers||[]).length?c.insurers.join(', '):'<span class="cust-sub">ทุกบริษัท</span>';
+    const excN=(c.exceptions||[]).length;
+    return `<tr>
+      <td><span class="code-chip">${c.custCode}</span> <span class="cust-name">${c.name}</span></td>
+      <td><span class="badge ${TYPE_BADGE[c.type]}">${TYPE_LABEL[c.type]}</span></td>
+      <td class="hide-m">${c.seller||'-'}</td>
+      <td class="hide-m" style="font-size:.82rem">${insText}</td>
+      <td style="font-size:.82rem">${tdText}</td>
+      <td class="hide-m">${excN?`<span class="badge b-agent">${excN} ข้อ</span>`:'<span class="cust-sub">—</span>'}</td>
+      <td><button class="icon-btn" onclick="openRegModal(${c.id})">แก้</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function onRegTypeChange(){
+  const t=document.getElementById('r_type').value;
+  document.getElementById('r_codeField').style.display=t==='agent'?'block':'none';
+}
+function onRegCodeChange(){
+  const s=sellerFromCode(document.getElementById('r_code').value);
+  if(s){ document.getElementById('r_seller').value=s; }
+}
+function renderRegInsurers(selected){
+  document.getElementById('r_insurers').innerHTML=INSURERS.map(i=>`
+    <label><input type="checkbox" value="${i.name}" ${selected.includes(i.name)?'checked':''}> ${i.name} <span class="tier">·${i.tier}</span></label>`).join('');
+}
+function renderRegTypeDisc(td){
+  document.getElementById('r_typeDisc').innerHTML=INSTYPES.map(t=>`
+    <div class="td-item"><span>${t}</span><input type="number" step="0.1" data-instype="${t}" value="${td[t]??''}" placeholder="%"></div>`).join('');
+}
+function renderRexcRows(){
+  document.getElementById('rexcWrap').innerHTML=rexcRows.map((e,i)=>`
+    <div class="rexc-row">
+      <select onchange="rexcRows[${i}].insurer=this.value">
+        ${INSURERS.map(x=>`<option value="${x.name}" ${e.insurer===x.name?'selected':''}>${x.name}</option>`).join('')}
+      </select>
+      <select onchange="rexcRows[${i}].instype=this.value">
+        ${INSTYPES.map(t=>`<option value="${t}" ${e.instype===t?'selected':''}>${t}</option>`).join('')}
+      </select>
+      <select onchange="rexcRows[${i}].vehCode=this.value">
+        <option value="">— ทุกรถ —</option>
+        ${VEHCODES.map(v=>`<option value="${v.code}" ${e.vehCode===v.code?'selected':''}>${v.label}</option>`).join('')}
+      </select>
+      <input type="number" step="0.1" value="${e.disc??''}" placeholder="%" oninput="rexcRows[${i}].disc=+this.value">
+      <button class="exc-del" onclick="removeRexcRow(${i})">ลบ</button>
+    </div>`).join('');
+}
+function addRexcRow(){ rexcRows.push({insurer:INSURERS[0].name,instype:'ป.3',vehCode:'',disc:null}); renderRexcRows(); }
+function removeRexcRow(i){ rexcRows.splice(i,1); renderRexcRows(); }
+
+function openRegModal(id){
+  editingReg=id||null;
+  document.getElementById('regModalTitle').textContent=id?'แก้ไขตัวแทน/VIP':'เปิดโค้ดตัวแทน/VIP';
+  document.getElementById('r_seller').innerHTML='<option value="">— เลือกเซลล์ —</option>'+SELLERS.map(s=>`<option value="${s}">${s}</option>`).join('');
+  const g=k=>document.getElementById(k);
+  if(id){
+    const c=customers.find(x=>x.id===id);
+    g('r_type').value=c.type; g('r_code').value=c.code||c.custCode||''; g('r_seller').value=c.seller||'';
+    g('r_name').value=c.name; g('r_payterm').value=c.payterm||'cash';
+    renderRegInsurers(c.insurers||[]); renderRegTypeDisc(c.typeDisc||{});
+    rexcRows=JSON.parse(JSON.stringify(c.exceptions||[]));
+  } else {
+    ['r_code','r_name'].forEach(k=>g(k).value='');
+    g('r_type').value='agent'; g('r_seller').value=''; g('r_payterm').value='cash';
+    renderRegInsurers([]); renderRegTypeDisc({}); rexcRows=[];
+  }
+  onRegTypeChange(); renderRexcRows();
+  document.getElementById('regOverlay').classList.add('open');
+}
+function closeRegModal(){ document.getElementById('regOverlay').classList.remove('open'); }
+function saveReg(){
+  const g=k=>document.getElementById(k).value.trim();
+  const type=document.getElementById('r_type').value;
+  if(!g('r_name')){ alert('กรุณากรอกชื่อ'); return; }
+  if(type==='agent'&&!g('r_code')){ alert('กรุณากรอกรหัสตัวแทน'); return; }
+  // กันรหัสตัวแทนซ้ำ
+  if(type==='agent'){
+    const dup=customers.find(x=>x.custCode===g('r_code')&&x.id!==editingReg);
+    if(dup){ alert('รหัส '+g('r_code')+' มีอยู่แล้ว ('+dup.name+') — กรุณาใช้รหัสอื่น'); return; }
+  }
+  const seller=type==='agent'?(sellerFromCode(g('r_code'))||document.getElementById('r_seller').value):document.getElementById('r_seller').value;
+  if(!seller){ alert('กรุณาเลือกเซลล์ผู้ดูแล'); return; }
+  // เก็บค่าจากฟอร์ม
+  const insurers=Array.from(document.querySelectorAll('#r_insurers input:checked')).map(x=>x.value);
+  if(!insurers.length){ alert('กรุณาเลือกบริษัทที่ขายได้อย่างน้อย 1 บริษัท'); return; }
+  const typeDisc={};
+  document.querySelectorAll('#r_typeDisc input').forEach(inp=>{ if(inp.value!=='') typeDisc[inp.dataset.instype]=+inp.value; });
+  const exceptions=rexcRows.filter(e=>e.disc!=null&&e.disc!=='').map(e=>({insurer:e.insurer,instype:e.instype,vehCode:e.vehCode||'',disc:+e.disc}));
+  const data={ type, seller, name:g('r_name'), payterm:g('r_payterm'), insurers, typeDisc, exceptions };
+  if(type==='agent'){ data.code=g('r_code'); data.custCode=g('r_code'); }
+  if(editingReg){
+    Object.assign(customers.find(x=>x.id===editingReg),data);
+  } else {
+    if(type==='vip') data.custCode=genCustCode('vip');
+    data.entity='person'; data.phone1=''; data.phone2=''; data.address=''; data.source=''; data.contact='';
+    data.id=Date.now(); customers.push(data);
+  }
+  renderRegistry(); renderCustomers(); closeRegModal();
+}
+
+/* ====== Password gate ====== */
+function tryGate(){
+  if(document.getElementById('gatePass').value===REG_PASSWORD){
+    regUnlocked=true;
+    document.getElementById('gateOverlay').classList.remove('open');
+    document.getElementById('gateErr').style.display='none';
+    document.getElementById('gatePass').value='';
+    switchView('registry');
+  } else {
+    document.getElementById('gateErr').style.display='block';
+  }
+}
+function closeGate(){ document.getElementById('gateOverlay').classList.remove('open'); document.getElementById('gatePass').value=''; }
+
+function switchView(v){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===v));
+  if(v==='registry') renderRegistry();
+  if(v==='debtors') renderDebtors();
+  if(v==='payments') {
+    // โหลด cache ใน background ทันทีที่เปิดหน้ารับชำระ
+    if(!_apiSalesCache && !_apiSalesLoading) {
+      const hint = document.getElementById('payResults');
+      if(hint) hint.innerHTML='<div class="cust-sub" style="padding:8px;color:var(--ink-soft)">⏳ กำลังโหลดข้อมูลจาก Sheet... (รอสักครู่แล้วค้นหาได้เลย)</div>';
+      loadApiSalesCache().then(() => {
+        const hint2 = document.getElementById('payResults');
+        if(hint2 && hint2.innerHTML.includes('โหลดข้อมูล')) hint2.innerHTML='';
+      });
+    }
+  }
+}
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  const v=t.dataset.view;
+  // หน้าทะเบียนล็อกด้วยรหัสผ่าน
+  if(v==='registry' && !regUnlocked){
+    document.getElementById('gateOverlay').classList.add('open');
+    setTimeout(()=>document.getElementById('gatePass').focus(),100);
+    return;
+  }
+  switchView(v);
+}));
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+seed(); fillSellerFilters(); renderCustomers(); renderSales(); renderRegistry();
+
+// ===== API CONFIG =====
+const API_URL = 'https://script.google.com/macros/s/AKfycbxMRF4Scstfhh1JcATCFnliLjyezUI1h9ZnhytdT7hwynCuUhdqniUS6r5owrcUsktR/exec';
+
+// cache ข้อมูลจาก API ไว้ใน memory
+let _salesCache = null;
+let _salesCacheTime = 0;
+const CACHE_TTL = 5 * 60 * 1000;
+
+// เรียก API ด้วย JSONP — ไม่มีปัญหา CORS ทุก domain
+function apiCall(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_cb' + Date.now() + Math.floor(Math.random()*9999);
+    let script;
+    const timer = setTimeout(() => {
+      delete window[cbName];
+      if(script && script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error('timeout'));
+    }, 25000);
+
+    window[cbName] = function(data) {
+      clearTimeout(timer);
+      delete window[cbName];
+      if(script && script.parentNode) script.parentNode.removeChild(script);
+      resolve(data);
+    };
+
+    const qs = new URLSearchParams({...params, callback: cbName}).toString();
+    script = document.createElement('script');
+    script.src = `${API_URL}?${qs}`;
+    script.onerror = () => {
+      clearTimeout(timer);
+      delete window[cbName];
+      reject(new Error('JSONP error'));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+// โหลด sales ทั้งหมดมา cache ไว้ — ค้นหาใน memory แทน
+async function ensureSalesCache() {
+  const now = Date.now();
+  if(_salesCache && (now - _salesCacheTime) < CACHE_TTL) return _salesCache;
+  // ค้นด้วย q='*' ได้ไม่เกิน 10 รายการ — ต้องใช้วิธีอื่น
+  // ใช้ getDebtors เพื่อได้รายการที่ต้องสนใจก่อน
+  // สำหรับ search ค้นจาก local sales array ที่มี seed data + ดึงจาก API เฉพาะที่ค้นหา
+  return null; // ยังไม่ cache
+}
+
+// ค้นหาจาก local + API แบบเร็ว
+async function searchSalesAPI(q) {
+  const qs = q.toLowerCase().trim();
+  // 1. ค้นจาก local memory ก่อน (seed data)
+  const localResults = sales.filter(s => {
+    const owner = customers.find(x=>x.id===s.customerId);
+    return [String(s.id), s.policy||'', s.plate||'', s.insured||'',
+      owner?owner.name:''].join(' ').toLowerCase().includes(qs);
+  }).slice(0,10).map(s => {
+    const owner = customers.find(x=>x.id===s.customerId);
+    const grand = saleGrandTotal(s), paid = totalPaid(s.id), bal = payBalance(s);
+    return {
+      txId:String(s.id), name:owner?owner.name:s.insured, plate:s.plate||'—',
+      instype:s.instype, insurer:s.insurer, seller:s.seller, policyNo:s.policy||'—',
+      cond:s.payterm==='install'?'ผ่อน':s.payterm==='bill'?'วางบิล':'เงินสด',
+      grandTotal:grand, totalPaid:paid, balance:bal,
+      payStatus:bal<=0.01?'ชำระครบ':paid>0?'ค้างบางส่วน':'ยังไม่ชำระ',
+    };
+  });
+  return localResults;
+}
+
+// ===== หน้าลูกหนี้ =====
+async function renderDebtors() {
+  const filterEl = document.getElementById('debtFilter');
+  const filter = filterEl ? filterEl.value : 'all';
+  const body = document.getElementById('debtBody');
+  const summary = document.getElementById('debtSummary');
+
+  // แสดง local ก่อนทันที
+  showDebtorsLocal(filter, body, summary);
+
+  // ลอง API (ถ้าเชื่อมแล้ว)
+  const apiResult = await apiCall({action:'getDebtors', filter});
+  if(apiResult && !apiResult.error && apiResult.debtors) {
+    showDebtorsData(apiResult.debtors, apiResult.summary||{}, body, summary);
+  }
+}
+
+function showDebtorsLocal(filter, body, summary){
+  const today = new Date(); today.setHours(0,0,0,0);
+  let debtors = sales
+    .filter(s => s.payterm==='install' || s.payterm==='bill')
+    .filter(s => payBalance(s) > 0.01)
+    .map(s => {
+      const owner = customers.find(x=>x.id===s.customerId);
+      const bal = payBalance(s);
+      const cond = s.payterm==='install'?'ผ่อน':'วางบิล';
+      return {
+        txId: String(s.id), cond,
+        name: owner?owner.name:s.insured, plate: s.plate||'—',
+        instype: s.instype||'', insurer: s.insurer||'', seller: s.seller||'',
+        agentCode: s.agentCode||'',
+        grandTotal: saleGrandTotal(s), totalPaid: totalPaid(s.id), balance: bal,
+        urgency: 'bill_pending', dueDate:'ไม่ระบุ', dueDays: null,
+      };
+    });
+
+  // กรอง
+  if(filter==='bill') debtors=debtors.filter(d=>d.cond==='วางบิล');
+  if(filter==='install') debtors=debtors.filter(d=>d.cond==='ผ่อน');
+
+  const sum = {
+    total: debtors.length,
+    overdue: 0, near: 0,
+    bill: debtors.filter(d=>d.cond==='วางบิล').length,
+    install: debtors.filter(d=>d.cond==='ผ่อน').length,
+    totalBalance: debtors.reduce((s,d)=>s+d.balance,0),
+  };
+
+  if(debtors.length) {
+    showDebtorsData(debtors, sum, body, summary);
+  } else {
+    // ไม่มีข้อมูล local → แสดงว่ากำลังโหลดจาก API
+    body.innerHTML=`<tr><td colspan="8"><div class="empty">⏳ กำลังโหลดข้อมูลจาก Google Sheet...</div></td></tr>`;
+    if(summary) summary.innerHTML='';
+  }
+}
+
+function showDebtorsData(debtors, sum, body, summary){
+  // กรองตาม filter ปัจจุบัน
+  const filter = (document.getElementById('debtFilter')||{}).value||'all';
+  if(filter==='overdue') debtors=debtors.filter(d=>d.urgency==='overdue');
+  else if(filter==='near') debtors=debtors.filter(d=>d.urgency==='near');
+  else if(filter==='bill') debtors=debtors.filter(d=>d.cond==='วางบิล');
+  else if(filter==='install') debtors=debtors.filter(d=>d.cond==='ผ่อน');
+
+  if(summary) summary.innerHTML = `
+    <span class="debt-chip red">🔴 เกินกำหนด ${sum.overdue||0}</span>
+    <span class="debt-chip yellow">🟡 ใกล้ครบ 7 วัน ${sum.near||0}</span>
+    <span class="debt-chip gray">วางบิลรอเก็บ ${sum.bill||0}</span>
+    <span class="debt-chip gray">ผ่อนค้าง ${sum.install||0}</span>
+    <span class="debt-chip green">ยอดรวมค้าง ฿${fmt(sum.totalBalance||0)}</span>
+  `;
+
+  if(!debtors.length) {
+    body.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="big">✓ ไม่มีลูกหนี้ค้างในหมวดนี้</div></div></td></tr>`;
+    return;
+  }
+
+  const URGENCY_LABEL={overdue:'🔴 เกินกำหนด',near:'🟡 ใกล้ครบ',bill_pending:'⚪ รอเก็บ',normal:'🟢 ปกติ',unknown:'— ไม่ระบุ'};
+  const URGENCY_BG={overdue:'#fff0f0',near:'#fffbe6',bill_pending:'#f0f4ff',normal:'#f0faf4',unknown:'#fafafa'};
+
+  body.innerHTML = debtors.map(d => {
+    const dueTxt = d.dueDays!=null
+      ? (d.dueDays<0?`เกิน ${Math.abs(d.dueDays)} วัน`:`อีก ${d.dueDays} วัน`) : '—';
+    return `<tr style="background:${URGENCY_BG[d.urgency]||'#fff'}">
+      <td><span style="font-size:.75rem;font-weight:700;color:#888">${URGENCY_LABEL[d.urgency]||'—'}</span></td>
+      <td><span class="cust-name">${d.name}</span><div class="cust-sub">${d.plate} · ${d.agentCode||'ทั่วไป'}</div></td>
+      <td><span class="badge ${d.cond==='ผ่อน'?'b-agent':'b-vip'}" style="font-size:.75rem">${d.cond}</span></td>
+      <td class="hide-m">${d.instype||''} ${d.insurer||''}</td>
+      <td style="font-weight:700;color:var(--accent)">฿${fmt(+(d.balance||0))}</td>
+      <td class="hide-m">${d.dueDate||'—'}<div class="cust-sub" style="color:${d.dueDays!=null&&d.dueDays<0?'var(--red)':'inherit'}">${dueTxt}</div></td>
+      <td class="hide-m">${d.seller||'—'}</td>
+      <td><button class="btn" style="padding:6px 12px;font-size:.8rem" onclick="goPayFromDebt('${d.txId}')">รับชำระ</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function goPayFromDebt(txId) {
+  // สลับไปหน้ารับชำระ แล้วค้นหาด้วย txId
+  switchView('payments');
+  const el = document.getElementById('paySearch');
+  if(el) { el.value=String(txId); searchPaySales(); }
+}
+</script>
+</body>
+</html>
